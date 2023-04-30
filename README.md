@@ -1,6 +1,6 @@
 # mdiwindow
 
-A new Flutter project.
+Window MDI demo in flutter.
 
 ## Getting Started
 
@@ -14,6 +14,8 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Screentshots
 <picture> 
  <img alt="App Screenshot" src="https://github.com/bidyut12345/mdiwindow/raw/master/screenshot1.gif">
 </picture>
