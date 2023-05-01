@@ -26,6 +26,7 @@ class _MdiManagerState extends State<MdiManager> {
                 fit: StackFit.expand,
                 children: widget.mdiController.windows.map((e) {
                   return Visibility(
+                    key: ValueKey("formid${e.formIndex}"),
                     visible: !(e.isMinimized && e.isAnimationEnded),
                     child: AnimatedPositioned(
                       duration: Duration(milliseconds: e.isWindowDraggin ? 0 : 300),
@@ -42,7 +43,7 @@ class _MdiManagerState extends State<MdiManager> {
                       width: e.isMinimized ? 50 : (e.isMaximized ? boxcons.maxWidth : e.currentWidth),
                       // right: e.isMaximized ? 0 : null,
                       // bottom: e.isMaximized ? 0 : null,
-                      key: e.key,
+                      // key: e.key,
                       child: e,
                     ),
                   );
@@ -83,9 +84,10 @@ class _MdiManagerState extends State<MdiManager> {
                               padding: const EdgeInsets.all(1.0),
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.all(3),
-                                  backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[700] : Colors.blue[500],
-                                ),
+                                    padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3),
+                                    backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[700] : Colors.blue[500],
+                                    minimumSize: Size(100, 32),
+                                    alignment: Alignment.centerLeft),
                                 onPressed: () {
                                   var isRestored = false;
                                   item?.isAnimationEnded = false;

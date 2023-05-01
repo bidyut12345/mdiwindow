@@ -19,9 +19,12 @@ class MdiController {
 
   void _createNewWindowedApp(String title, int formIndex) {
     ResizableWindow resizableWindow = ResizableWindow(
-      key: UniqueKey(),
+      // key: UniqueKey(),
       title: title,
       formIndex: formIndex,
+      child: FlutterLogo(
+        size: 300,
+      ),
     );
 
     //Set initial position

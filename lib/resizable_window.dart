@@ -4,29 +4,27 @@ import 'main.dart';
 
 // ignore: must_be_immutable
 class ResizableWindow extends StatefulWidget {
+  ResizableWindow({super.key, required this.title, required this.formIndex, required this.child, this.currentHeight = 600, this.currentWidth = 340});
+
+  final String title;
+  final int formIndex;
+  final Widget child;
+
   double? currentHeight;
   double? currentWidth;
-  double? defaultHeight = 400.0;
-  double? defaultWidth = 400.0;
   double minHeight = 50.0;
-  double minWidth = 50.0;
+  double minWidth = 200.0;
   double? x = 0.0;
   double? y = 0.0;
-  ResizableWindow({super.key, required this.title, required this.formIndex}) {
-    currentHeight = defaultHeight;
-    currentWidth = defaultWidth;
-  }
+  bool isMinimized = false;
+  bool isMaximized = false;
+  bool isWindowDraggin = false;
+  bool isAnimationEnded = true;
 
   Function(double, double)? onWindowDragged;
   Function()? onWindowDown;
   Function()? onWindowClosed;
   Function()? globalSetState;
-  bool isMinimized = false;
-  bool isMaximized = false;
-  bool isWindowDraggin = false;
-  bool isAnimationEnded = true;
-  final String title;
-  final int formIndex;
   @override
   // ignore: library_private_types_in_public_api
   _ResizableWindowState createState() => _ResizableWindowState();
@@ -165,125 +163,137 @@ class _ResizableWindowState extends State<ResizableWindow> {
   }
 
   _getHeader() {
-    return GestureDetector(
-      onPanUpdate: (tapInfo) {
-        if (!widget.isMaximized) {
-          widget.onWindowDragged!(tapInfo.delta.dx, tapInfo.delta.dy);
-        }
-      },
-      onPanDown: (tapInfo) {
-        widget.onWindowDown!();
-        setState(() {});
-      },
-      onPanStart: (details) {
-        widget.isWindowDraggin = true;
-        mdiController.onUpdate();
-      },
-      onPanEnd: (details) {
-        widget.isWindowDraggin = false;
-        mdiController.onUpdate();
-      },
-      child: Container(
-        // width: widget.isMaximized ? null : widget.currentWidth,
-        height: _headerSize,
-        color: widget == mdiController.windows.last ? Color.fromARGB(255, 12, 25, 39) : Color.fromARGB(255, 12, 63, 105),
-        child: Row(
-          children: [
-            Expanded(
-                child: Padding(
-              padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 10.0),
-              child: Text(
-                widget.title,
-                style: TextStyle(
-                  color: Colors.grey[100],
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            )),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: SizedBox(
-                width: 35,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // widget.onWindowClosed!();
-                    widget.isWindowDraggin = false;
-                    if (!widget.isMinimized) {
-                      widget.isAnimationEnded = false;
-                    } else {
-                      widget.isAnimationEnded = true;
-                    }
-                    widget.isMinimized = !widget.isMinimized;
-                    mdiController.onUpdate();
-                    setState(() {});
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.all(2),
+    return Container(
+      // width: widget.isMaximized ? null : widget.currentWidth,
+      height: _headerSize,
+      color: widget == mdiController.windows.last ? Color.fromARGB(255, 12, 25, 39) : Color.fromARGB(255, 12, 63, 105),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onPanUpdate: (tapInfo) {
+                if (!widget.isMaximized) {
+                  widget.onWindowDragged!(tapInfo.delta.dx, tapInfo.delta.dy);
+                }
+              },
+              onDoubleTap: () {
+                widget.isWindowDraggin = false;
+                // widget.onWindowClosed!();
+                if (!widget.isMaximized) {
+                  widget.isAnimationEnded = false;
+                } else {
+                  widget.isAnimationEnded = true;
+                }
+                widget.isMaximized = !widget.isMaximized;
+                setState(() {});
+                mdiController.onUpdate();
+              },
+              onPanDown: (tapInfo) {
+                widget.onWindowDown!();
+                setState(() {});
+              },
+              onPanStart: (details) {
+                widget.isWindowDraggin = true;
+                mdiController.onUpdate();
+              },
+              onPanEnd: (details) {
+                widget.isWindowDraggin = false;
+                mdiController.onUpdate();
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 10.0),
+                child: Text(
+                  widget.title,
+                  style: TextStyle(
+                    color: Colors.grey[100],
+                    fontWeight: FontWeight.bold,
                   ),
-                  child: Icon(Icons.minimize),
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: SizedBox(
-                width: 35,
-                child: ElevatedButton(
-                  onPressed: () {
-                    widget.isWindowDraggin = false;
-
-                    // widget.onWindowClosed!();
-                    if (!widget.isMaximized) {
-                      widget.isAnimationEnded = false;
-                    } else {
-                      widget.isAnimationEnded = true;
-                    }
-                    widget.isMaximized = !widget.isMaximized;
-                    setState(() {});
-                    mdiController.onUpdate();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                    padding: EdgeInsets.all(2),
-                  ),
-                  child: Icon(Icons.square_outlined),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: SizedBox(
+              width: 35,
+              child: ElevatedButton(
+                onPressed: () {
+                  // widget.onWindowClosed!();
+                  widget.isWindowDraggin = false;
+                  if (!widget.isMinimized) {
+                    widget.isAnimationEnded = false;
+                  } else {
+                    widget.isAnimationEnded = true;
+                  }
+                  widget.isMinimized = !widget.isMinimized;
+                  mdiController.onUpdate();
+                  setState(() {});
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.all(2),
                 ),
+                child: Icon(Icons.minimize),
               ),
             ),
-            // Padding(
-            //   padding: const EdgeInsets.all(2.0),
-            //   child: SizedBox(
-            //     width: 35,
-            //     child: ElevatedButton(
-            //       onPressed: () {
-            //         // widget.onWindowClosed!();
-            //       },
-            //       style: ElevatedButton.styleFrom(
-            //         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-            //         padding: EdgeInsets.all(2),
-            //       ),
-            //       child: Icon(Icons.dock_outlined),
-            //     ),
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: SizedBox(
-                width: 35,
-                child: ElevatedButton(
-                  onPressed: () {
-                    widget.onWindowClosed!();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                    padding: EdgeInsets.all(2),
-                  ),
-                  child: Icon(Icons.close),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: SizedBox(
+              width: 35,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.isWindowDraggin = false;
+                  // widget.onWindowClosed!();
+                  if (!widget.isMaximized) {
+                    widget.isAnimationEnded = false;
+                  } else {
+                    widget.isAnimationEnded = true;
+                  }
+                  widget.isMaximized = !widget.isMaximized;
+                  setState(() {});
+                  mdiController.onUpdate();
+                },
+                style: ElevatedButton.styleFrom(
+                  // backgroundColor: Color.fromARGB(255, 238, 0, 0),
+                  padding: EdgeInsets.all(2),
                 ),
+                child: Icon(Icons.square_outlined),
               ),
             ),
-          ],
-        ),
+          ),
+          // Padding(
+          //   padding: const EdgeInsets.all(2.0),
+          //   child: SizedBox(
+          //     width: 35,
+          //     child: ElevatedButton(
+          //       onPressed: () {
+          //         // widget.onWindowClosed!();
+          //       },
+          //       style: ElevatedButton.styleFrom(
+          //         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
+          //         padding: EdgeInsets.all(2),
+          //       ),
+          //       child: Icon(Icons.dock_outlined),
+          //     ),
+          //   ),
+          // ),
+          Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: SizedBox(
+              width: 35,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.onWindowClosed!();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 238, 0, 0),
+                  padding: EdgeInsets.all(2),
+                ),
+                child: Icon(Icons.close),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -293,9 +303,19 @@ class _ResizableWindowState extends State<ResizableWindow> {
       onPanDown: (tapInfo) {
         widget.onWindowDown!();
         mdiController.onUpdate();
+        setState(() {});
       },
       child: Container(
         color: Colors.blueGrey,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(),
+              widget.child,
+            ],
+          ),
+        ),
       ),
     );
   }
