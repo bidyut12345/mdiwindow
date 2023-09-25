@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../mdiwindow.dart';
+import 'global.dart';
 
 // ignore: must_be_immutable
 class ResizableWindow extends StatefulWidget {
