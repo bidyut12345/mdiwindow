@@ -4,6 +4,7 @@ import 'package:mdiwindow/mdiwindow.dart';
 import 'package:menu_bar/menu_bar.dart';
 
 void main() {
+  MdiConfig.adjustWindowSizePositionOnParentSizeChanged = true;
   runApp(const MyApp());
 }
 
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter MDI Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
       ),
       home: const MyHomePage(),
     );

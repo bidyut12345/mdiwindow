@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mdiwindow/mdiwindow.dart';
 import 'global.dart';
 import 'mdi_controller.dart';
 import 'resizable_window.dart';
@@ -158,7 +159,7 @@ class _MdiManagerState extends State<MdiManager> {
   Widget getItem(ResizableWindow e, BoxConstraints boxcons, BuildContext context) {
     double? heightLocal = e.isMaximized ? boxcons.maxHeight : e.currentHeight;
     double? widthLocal = e.isMaximized ? boxcons.maxWidth : e.currentWidth;
-    if (mdiController.locationInPercent) {
+    if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       if (heightLocal! > boxcons.maxHeight) {
         heightLocal = boxcons.maxHeight;
       }
@@ -178,16 +179,16 @@ class _MdiManagerState extends State<MdiManager> {
     double topLocal = e.isMinimized
         ? boxcons.maxHeight + 10
         : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
-    if (!mdiController.locationInPercent) {
+    if (!MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);
     }
-    if (leftLocal < 0) {
-      leftLocal = 0;
-    }
-    if (topLocal < 0) {
-      topLocal = 0;
-    }
+    // if (leftLocal < 0) {
+    //   leftLocal = 0;
+    // }
+    // if (topLocal < 0) {
+    //   topLocal = 0;
+    // }
     if (e.dialogParent != null) {
       if (topLocal + (heightLocal ?? 0) > (e.dialogParent?.currentHeight ?? 0)) {
         topLocal = 0;

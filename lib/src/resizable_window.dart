@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'global.dart';
+import 'config.dart';
 
 // ignore: must_be_immutable
 class ResizableWindow extends StatefulWidget {
@@ -50,8 +51,6 @@ class ResizableWindow extends StatefulWidget {
 }
 
 class _ResizableWindowState extends State<ResizableWindow> {
-  var _headerSize = 30.0;
-  var _borderRadius = 6.0;
   @override
   void initState() {
     // TODO: implement initState
@@ -67,8 +66,9 @@ class _ResizableWindowState extends State<ResizableWindow> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         //Here goes the same radius, u can put into a var or function
-        borderRadius:
-            widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(_borderRadius)),
+        borderRadius: widget.isMaximized && widget.isAnimationEnded
+            ? null
+            : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
         boxShadow: widget.isMaximized && widget.isAnimationEnded
             ? null
             : const [
@@ -184,7 +184,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
   _getHeader() {
     return Container(
       // width: widget.isMaximized ? null : widget.currentWidth,
-      height: _headerSize,
+      height: MdiConfig.headerSize,
       color: widget == mdiController.thisWindow(context)
           ? Color.fromARGB(255, 12, 25, 39)
           : Color.fromARGB(255, 12, 63, 105),
@@ -453,7 +453,9 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     left: widget.dialogChild!.isMaximized ? 5 : widget.dialogChild?.x,
                     top: widget.dialogChild!.isMaximized ? 3 : widget.dialogChild?.y,
                     height: widget.dialogChild!.isMaximized
-                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) - _headerSize - 10
+                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) -
+                            MdiConfig.headerSize -
+                            10
                         : widget.dialogChild?.currentHeight,
                     width: widget.dialogChild!.isMaximized
                         ? (widget.isMaximized ? mdiController.mdiWidth : widget.currentWidth!) - 10

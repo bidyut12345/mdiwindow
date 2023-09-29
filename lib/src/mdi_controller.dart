@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mdiwindow/mdiwindow.dart';
 
 import 'resizable_window.dart';
 
@@ -16,7 +17,7 @@ class MdiController {
   double mdiHeight = 0;
   double mdiWidth = 0;
 
-  final bool locationInPercent = false; //In progress
+  // final bool adjustWindowSizePositionOnParentSizeChanged = false; //In progress : locationInPercent
 
   void addWindow({
     required String title,
@@ -74,6 +75,11 @@ class MdiController {
         windowHeight = parentHeight - 70;
       }
     }
+    // print("Parent width : $parentWidth");
+    // print("Parent width : $windowWidth");
+    if (parentWidth < windowWidth) {
+      windowWidth = parentWidth - 50;
+    }
     ResizableWindow resizableWindow = ResizableWindow(
       title: title,
       formIndex: formIndex,
@@ -95,7 +101,7 @@ class MdiController {
     // resizableWindow.x = rng.nextDouble() * 500;
     // resizableWindow.y = rng.nextDouble() * 500;
 
-    if (locationInPercent) {
+    if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       // resizableWindow.x = ((parentWidth - (resizableWindow.currentWidth ?? 0)) / 2) / parentWidth;
       // resizableWindow.y = ((parentHeight - (resizableWindow.currentHeight ?? 0)) / 4) / parentHeight;
       resizableWindow.x = 0.5;
@@ -114,19 +120,23 @@ class MdiController {
     //Init onWindowDragged
     resizableWindow.onWindowDragged = (dx, dy, isResized) {
       // if (resizableWindow.isDialog && !isResized) return;
-      if (locationInPercent) {
+      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
         resizableWindow.x = resizableWindow.x! + (dx / parentWidth);
         resizableWindow.y = resizableWindow.y! + (dy / parentHeight);
         onUpdate();
       } else {
         resizableWindow.x = resizableWindow.x! + dx;
         resizableWindow.y = resizableWindow.y! + dy;
+        // print("window location ${resizableWindow.x}, ${resizableWindow.y}");
         if (resizableWindow.x! < -(resizableWindow.currentWidth! - 130)) {
           resizableWindow.x = -(resizableWindow.currentWidth! - 130);
         }
         if (resizableWindow.y! < 0) {
           resizableWindow.y = 0;
         }
+        // if (resizableWindow.x! < 0) {
+        //   resizableWindow.x = 0;
+        // }
         if (dialogParent != null) {
           if (dialogParent.isMaximized) {
             if (resizableWindow.y! > (mdiHeight - 80)) {
@@ -144,7 +154,6 @@ class MdiController {
               resizableWindow.x = (dialogParent.currentWidth! - 50);
             }
           }
-
           dialogParent.globalSetState!();
         } else {
           if (resizableWindow.y! > (mdiHeight - 20)) {
