@@ -20,4 +20,4 @@ samples, guidance on mobile development, and a full API reference.
  <img alt="App Screenshot" src="https://github.com/bidyut12345/mdiwindow/raw/master/screenshot1.gif?raw=true">
 </picture>
 
-![Screenshot](screenshot1.gif)
+<!-- ![Screenshot](screenshot1.gif) -->
