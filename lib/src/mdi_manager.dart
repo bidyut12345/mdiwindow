@@ -69,7 +69,7 @@ class _MdiManagerState extends State<MdiManager> {
                 ),
                 child: Row(
                   children: [
-                    const SizedBox(height: 30),
+                    // const SizedBox(height: 50),
                     Expanded(
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
@@ -91,12 +91,13 @@ class _MdiManagerState extends State<MdiManager> {
                                       child: ElevatedButton(
                                         key: ValueKey("form_task${item.formIndex}"),
                                         style: ElevatedButton.styleFrom(
-                                            padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
-                                            backgroundColor: item == widget.mdiController.windows.last
-                                                ? const Color.fromARGB(255, 23, 66, 109)
-                                                : Colors.blue[500],
-                                            minimumSize: const Size(100, 32),
-                                            alignment: Alignment.centerLeft),
+                                          padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
+                                          backgroundColor: item == widget.mdiController.windows.last
+                                              ? const Color.fromARGB(255, 23, 66, 109)
+                                              : Colors.blue[500],
+                                          minimumSize: const Size(100, 32),
+                                          alignment: Alignment.centerLeft,
+                                        ),
                                         onPressed: () {
                                           // widget.onWindowClosed!();
                                           // item?.isWindowDraggin = false;
@@ -139,9 +140,23 @@ class _MdiManagerState extends State<MdiManager> {
                                             }
                                           }
                                         },
-                                        child: Text(
-                                          item.title,
-                                        ),
+                                        child: Column(children: [
+                                          Text(
+                                            item.title,
+                                          ),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                            ),
+                                            height: 2,
+                                            child: item == widget.mdiController.windows.last
+                                                ? Text(
+                                                    item.title,
+                                                    style: TextStyle(height: 1, color: Colors.transparent),
+                                                  )
+                                                : null,
+                                          )
+                                        ]),
                                       ),
                                     );
                             },
