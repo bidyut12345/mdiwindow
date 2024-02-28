@@ -7,7 +7,7 @@ class MdiController {
   MdiController(this.onUpdate);
 
   final List<ResizableWindow> _windows = List.empty(growable: true);
-
+// updates/setstate of mdi container
   VoidCallback onUpdate;
 
   List<ResizableWindow> get windows => _windows;
