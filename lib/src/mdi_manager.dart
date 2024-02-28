@@ -81,7 +81,7 @@ class _MdiManagerState extends State<MdiManager> {
                       var sublist = widget.mdiController.windows.where((element) => !element.isMaximized).toList();
                       var count = sublist.length;
                       var widt = widget.mdiController.mdiWidth / count;
-                      print(widt);
+                      var left = 0.0;
                       for (ResizableWindow item in sublist) {
                         item.currentWidth = widt;
                         item.currentHeight = widget.mdiController.mdiHeight;
