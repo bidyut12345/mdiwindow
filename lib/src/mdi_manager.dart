@@ -219,12 +219,13 @@ class _MdiManagerState extends State<MdiManager> {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);
     }
+
     // if (leftLocal < 0) {
     //   leftLocal = 0;
     // }
-    // if (topLocal < 0) {
-    //   topLocal = 0;
-    // }
+    if (topLocal < 0) {
+      topLocal = 0;
+    }
     if (e.dialogParent != null) {
       if (topLocal + (heightLocal ?? 0) > (e.dialogParent?.currentHeight ?? 0)) {
         topLocal = 0;

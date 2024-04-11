@@ -121,8 +121,19 @@ class MdiController {
     resizableWindow.onWindowDragged = (dx, dy, isResized) {
       // if (resizableWindow.isDialog && !isResized) return;
       if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
-        resizableWindow.x = resizableWindow.x! + (dx / parentWidth);
-        resizableWindow.y = resizableWindow.y! + (dy / parentHeight);
+        if (parentWidth != null) {
+          resizableWindow.x = resizableWindow.x! + ((dx * 1) / parentWidth);
+          resizableWindow.y = resizableWindow.y! + ((dy * 1) / parentHeight);
+        } else {
+          resizableWindow.x = resizableWindow.x! + ((dx * 1) / mdiWidth);
+          resizableWindow.y = resizableWindow.y! + ((dy * 1) / mdiHeight);
+        }
+        // print("X:${resizableWindow.x}");
+        // print("Y:${resizableWindow.y}");
+        // if (resizableWindow.x! < 0) resizableWindow.x = 0.1;
+        // if (resizableWindow.y! < 0) resizableWindow.y = 0.1;
+        // if (resizableWindow.x! > 0.9) resizableWindow.x = 0.9;
+        // if (resizableWindow.y! < 0.9) resizableWindow.y = 0.9;
         onUpdate();
       } else {
         resizableWindow.x = resizableWindow.x! + dx;
@@ -207,7 +218,9 @@ class MdiController {
       if (windows.isNotEmpty) tmp = _windows.last;
       _windows.add(resizableWindow);
 
-      tmp?.globalSetState!();
+      if (tmp?.globalSetState != null) {
+        tmp?.globalSetState!();
+      }
 
       // Update Widgets after adding the new App
       onUpdate();

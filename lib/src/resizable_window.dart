@@ -470,12 +470,20 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   void _onHorizontalDragLeft(DragUpdateDetails details) {
     setState(() {
-      widget.currentWidth = widget.currentWidth! - details.delta.dx;
-      if (widget.currentWidth! < widget.minWidth) {
-        widget.currentWidth = widget.minWidth;
+      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+        widget.currentWidth = widget.currentWidth! - (details.delta.dx * 2);
+        if (widget.currentWidth! < widget.minWidth) {
+          widget.currentWidth = widget.minWidth;
+        }
       } else {
-        widget.onWindowDragged!(details.delta.dx, 0, true);
+        widget.currentWidth = widget.currentWidth! - details.delta.dx;
+        if (widget.currentWidth! < widget.minWidth) {
+          widget.currentWidth = widget.minWidth;
+        } else {
+          widget.onWindowDragged!(details.delta.dx, 0, true);
+        }
       }
+
       widget.isWindowDraggin = true;
       if (widget.dialogParent != null) {
         widget.dialogParent?.globalSetState!();
@@ -487,7 +495,12 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   void _onHorizontalDragRight(DragUpdateDetails details) {
     setState(() {
-      widget.currentWidth = widget.currentWidth! + details.delta.dx;
+      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+        widget.currentWidth = widget.currentWidth! + (details.delta.dx * 2);
+      } else {
+        widget.currentWidth = widget.currentWidth! + details.delta.dx;
+      }
+
       if (widget.currentWidth! < widget.minWidth) {
         widget.currentWidth = widget.minWidth;
       }
@@ -502,7 +515,12 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   void _onHorizontalDragBottom(DragUpdateDetails details) {
     setState(() {
-      widget.currentHeight = widget.currentHeight! + details.delta.dy;
+      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+        widget.currentHeight = widget.currentHeight! + (details.delta.dy * 2);
+      } else {
+        widget.currentHeight = widget.currentHeight! + details.delta.dy;
+      }
+
       if (widget.currentHeight! < widget.minHeight) {
         widget.currentHeight = widget.minHeight;
       }
@@ -517,11 +535,18 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   void _onHorizontalDragTop(DragUpdateDetails details) {
     setState(() {
-      widget.currentHeight = widget.currentHeight! - details.delta.dy;
-      if (widget.currentHeight! < widget.minHeight) {
-        widget.currentHeight = widget.minHeight;
+      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+        widget.currentHeight = widget.currentHeight! - (details.delta.dy * 2);
+        if (widget.currentHeight! < widget.minHeight) {
+          widget.currentHeight = widget.minHeight;
+        }
       } else {
-        widget.onWindowDragged!(0, details.delta.dy, true);
+        widget.currentHeight = widget.currentHeight! - details.delta.dy;
+        if (widget.currentHeight! < widget.minHeight) {
+          widget.currentHeight = widget.minHeight;
+        } else {
+          widget.onWindowDragged!(0, details.delta.dy, true);
+        }
       }
       widget.isWindowDraggin = true;
       if (widget.dialogParent != null) {
