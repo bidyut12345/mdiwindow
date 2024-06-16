@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mdiwindow/mdiwindow.dart';
 import 'global.dart';
-import 'mdi_controller.dart';
+// import 'mdi_controller.dart';
 import 'resizable_window.dart';
 
 class MdiManager extends StatefulWidget {
@@ -10,11 +10,10 @@ class MdiManager extends StatefulWidget {
   const MdiManager({super.key, required this.mdiController});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _MdiManagerState createState() => _MdiManagerState();
+  MdiManagerState createState() => MdiManagerState();
 }
 
-class _MdiManagerState extends State<MdiManager> {
+class MdiManagerState extends State<MdiManager> {
   @override
   void initState() {
     super.initState();
@@ -30,23 +29,26 @@ class _MdiManagerState extends State<MdiManager> {
           child: LayoutBuilder(builder: (context, boxcons) {
             mdiController.mdiHeight = boxcons.maxHeight;
             mdiController.mdiWidth = boxcons.maxWidth;
+            // print("maxWidth12345 : ${MediaQuery.of(context).size.height}");
             return Stack(
               fit: StackFit.expand,
               children: [
                 Stack(
-                    fit: StackFit.expand,
-                    children: widget.mdiController.windows.where((element) => !element.isDialog).map((e) {
-                      return getItem(e, boxcons, context);
-                    }).toList()),
+                  fit: StackFit.expand,
+                  children: widget.mdiController.windows.where((element) => !element.isDialog).map((e) {
+                    return getItem(e, boxcons, context);
+                  }).toList(),
+                ),
                 Visibility(
                   visible: widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty,
                   child: Container(
                     color: Colors.black.withOpacity(0.5),
                     child: Stack(
-                        fit: StackFit.expand,
-                        children: widget.mdiController.windows.where((element) => element.isDialog).map((e) {
-                          return getItem(e, boxcons, context);
-                        }).toList()),
+                      fit: StackFit.expand,
+                      children: widget.mdiController.windows.where((element) => element.isDialog).map((e) {
+                        return getItem(e, boxcons, context);
+                      }).toList(),
+                    ),
                   ),
                 ),
               ],
@@ -75,24 +77,40 @@ class _MdiManagerState extends State<MdiManager> {
             ),
             child: Row(
               children: [
-                // const SizedBox(height: 50),
                 IconButton.filled(
                     onPressed: () {
-                      var sublist = widget.mdiController.windows.where((element) => !element.isMaximized).toList();
-                      var count = sublist.length;
-                      var widt = widget.mdiController.mdiWidth / count;
-                      var left = 0.0;
-                      for (ResizableWindow item in sublist) {
-                        item.currentWidth = widt;
-                        item.currentHeight = widget.mdiController.mdiHeight;
-                        item.x = left;
-                        item.y = 0.0;
-                        left += widt;
-                        item.globalSetState!();
-                      }
+                      //   var sublist = widget.mdiController.windows
+                      //       .where((element) => !element.isMaximized && !element.isMinimized)
+                      //       .toList();
+                      //   var count = sublist.length;
+                      //   if (count > 1) {
+                      //     double widt = widget.mdiController.mdiWidth / count;
+                      //     // double lff = widget.mdiController.mdiWidth / count;
+                      //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                      //       widt = (1.0 / count);
+                      //     }
+                      //     var left = widt / widget.mdiController.mdiWidth / 2;
+                      //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                      //       left = widt / 2;
+                      //     }
+                      //     for (ResizableWindow item in sublist) {
+                      //       item.currentWidth = widt;
+                      //       item.currentHeight = widget.mdiController.mdiHeight;
+                      //       if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                      //         item.currentHeight = 1;
+                      //       }
+                      //       item.x = left;
+                      //       item.y = 0.0;
+                      //       left += widt;
+                      //       item.globalSetState!();
+                      //     }
+                      // }
+                      mdiController.refreshSideBySideWindows();
+                      mdiController.isSideBySide = !mdiController.isSideBySide;
                       mdiController.onUpdate();
                     },
-                    icon: Icon(Icons.view_sidebar_sharp)),
+                    tooltip: "Side By Side",
+                    icon: const Icon(Icons.view_sidebar_sharp)),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -168,14 +186,14 @@ class _MdiManagerState extends State<MdiManager> {
                                         item.title,
                                       ),
                                       Container(
-                                        decoration: BoxDecoration(
+                                        decoration: const BoxDecoration(
                                           color: Colors.white,
                                         ),
                                         height: 2,
                                         child: item == widget.mdiController.windows.last
                                             ? Text(
                                                 item.title,
-                                                style: TextStyle(height: 1, color: Colors.transparent),
+                                                style: const TextStyle(height: 1, color: Colors.transparent),
                                               )
                                             : null,
                                       )
@@ -195,21 +213,27 @@ class _MdiManagerState extends State<MdiManager> {
   Widget getItem(ResizableWindow e, BoxConstraints boxcons, BuildContext context) {
     double? heightLocal = e.isMaximized ? boxcons.maxHeight : e.currentHeight;
     double? widthLocal = e.isMaximized ? boxcons.maxWidth : e.currentWidth;
+    if (heightLocal! > boxcons.maxHeight) {
+      heightLocal = boxcons.maxHeight;
+    }
+    if (widthLocal! > boxcons.maxWidth) {
+      widthLocal = boxcons.maxWidth;
+    }
     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
-      if (heightLocal! > boxcons.maxHeight) {
-        heightLocal = boxcons.maxHeight;
+      if (heightLocal <= 1) {
+        heightLocal = (e.isMaximized ? 1 : (e.currentHeight ?? 0.8)) * boxcons.maxHeight;
       }
-      if (widthLocal! > boxcons.maxWidth) {
-        widthLocal = boxcons.maxWidth;
+      if (widthLocal <= 1) {
+        widthLocal = (e.isMaximized ? 1 : (e.currentWidth ?? 0.5)) * boxcons.maxWidth;
       }
     }
+    // print("e.currentHeight ${e.currentHeight} e.currentWidth ${e.currentWidth}");
 
     double minimizedLeft = 0;
     // if (e.isMinimized) {
     //   final RenderBox renderBox = ValueKey("form_task${e.formIndex}")..currentContext?.findRenderObject() as RenderBox;
     //   final Size size = renderBox.size;
     // }
-
     double leftLocal =
         e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
     double topLocal = e.isMinimized
@@ -227,10 +251,23 @@ class _MdiManagerState extends State<MdiManager> {
       topLocal = 0;
     }
     if (e.dialogParent != null) {
-      if (topLocal + (heightLocal ?? 0) > (e.dialogParent?.currentHeight ?? 0)) {
+      if ((topLocal + heightLocal) > (e.dialogParent?.currentHeight ?? 0)) {
         topLocal = 0;
       }
     }
+    if (mdiController.isSideBySide) {
+      if (mdiController.sidebysidewindows.contains(e)) {
+        // var sublist = mdiController.windows.where((element) => !element.isMaximized && !element.isMinimized).toList();
+        double widt = boxcons.maxWidth / mdiController.sidebysidewindows.length;
+
+        int index = mdiController.sidebysidewindows.indexOf(e);
+        widthLocal = widt;
+        leftLocal = widt * index;
+        topLocal = 0.0;
+        heightLocal = boxcons.maxHeight;
+      }
+    }
+    // print("heightLocal $heightLocal widthLocal $widthLocal");
     return AnimatedPositioned(
       key: ValueKey("formid${e.formIndex}"),
       duration: Duration(milliseconds: e.isWindowDraggin ? 0 : 300),

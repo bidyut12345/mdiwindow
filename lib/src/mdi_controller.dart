@@ -11,14 +11,18 @@ class MdiController {
   VoidCallback onUpdate;
 
   List<ResizableWindow> get windows => _windows;
+  List<ResizableWindow> sidebysidewindows = [];
 
   int formIndex = 0;
 
   double mdiHeight = 0;
   double mdiWidth = 0;
+  refreshSideBySideWindows() {
+    sidebysidewindows = windows.where((element) => !element.isMaximized && !element.isMinimized).toList();
+  }
 
   // final bool adjustWindowSizePositionOnParentSizeChanged = false; //In progress : locationInPercent
-
+  bool isSideBySide = false;
   void addWindow({
     required String title,
     required Widget child,
@@ -44,42 +48,52 @@ class MdiController {
 
     double parentWidth = mdiWidth;
     double parentHeight = mdiHeight;
-    if (dialogParent != null) {
-      if (dialogParent.dialogParent != null) {
-        if (dialogParent.dialogParent!.dialogParent != null) {
-          if (dialogParent.dialogParent!.dialogParent!.dialogParent != null) {
-            if (!dialogParent.dialogParent!.dialogParent!.dialogParent!.isMaximized) {
-              parentWidth = dialogParent.dialogParent!.dialogParent!.dialogParent!.currentWidth!;
-              parentHeight = dialogParent.dialogParent!.dialogParent!.dialogParent!.currentHeight!;
+    findParentWidth() {
+      parentWidth = mdiWidth;
+      parentHeight = mdiHeight;
+      if (dialogParent != null) {
+        if (dialogParent.dialogParent != null) {
+          if (dialogParent.dialogParent!.dialogParent != null) {
+            if (dialogParent.dialogParent!.dialogParent!.dialogParent != null) {
+              if (!dialogParent.dialogParent!.dialogParent!.dialogParent!.isMaximized) {
+                parentWidth = dialogParent.dialogParent!.dialogParent!.dialogParent!.currentWidth!;
+                parentHeight = dialogParent.dialogParent!.dialogParent!.dialogParent!.currentHeight!;
+              }
+            }
+            if (!dialogParent.dialogParent!.dialogParent!.isMaximized) {
+              parentWidth = dialogParent.dialogParent!.dialogParent!.currentWidth!;
+              parentHeight = dialogParent.dialogParent!.dialogParent!.currentHeight!;
             }
           }
-          if (!dialogParent.dialogParent!.dialogParent!.isMaximized) {
-            parentWidth = dialogParent.dialogParent!.dialogParent!.currentWidth!;
-            parentHeight = dialogParent.dialogParent!.dialogParent!.currentHeight!;
+          if (!dialogParent.dialogParent!.isMaximized) {
+            parentWidth = dialogParent.dialogParent!.currentWidth!;
+            parentHeight = dialogParent.dialogParent!.currentHeight!;
           }
         }
-        if (!dialogParent.dialogParent!.isMaximized) {
-          parentWidth = dialogParent.dialogParent!.currentWidth!;
-          parentHeight = dialogParent.dialogParent!.currentHeight!;
+        if (!dialogParent.isMaximized) {
+          parentWidth = dialogParent.currentWidth!;
+          parentHeight = dialogParent.currentHeight!;
         }
       }
-      if (!dialogParent.isMaximized) {
-        parentWidth = dialogParent.currentWidth!;
-        parentHeight = dialogParent.currentHeight!;
+      if (dialogParent?.isPercentBased ?? false) {
+        parentHeight = mdiHeight * parentHeight;
+        parentWidth = mdiWidth * parentWidth;
+      }
+      if (windowHeight > parentHeight) {
+        if (dialogParent == null) {
+          windowHeight = parentHeight - 20;
+        } else {
+          windowHeight = parentHeight - 70;
+        }
+      }
+      // print("Parent width : $parentWidth");
+      // print("Parent width : $windowWidth");
+      if (parentWidth < windowWidth) {
+        windowWidth = parentWidth - 50;
       }
     }
-    if (windowHeight > parentHeight) {
-      if (dialogParent == null) {
-        windowHeight = parentHeight - 20;
-      } else {
-        windowHeight = parentHeight - 70;
-      }
-    }
-    // print("Parent width : $parentWidth");
-    // print("Parent width : $windowWidth");
-    if (parentWidth < windowWidth) {
-      windowWidth = parentWidth - 50;
-    }
+
+    findParentWidth();
     ResizableWindow resizableWindow = ResizableWindow(
       title: title,
       formIndex: formIndex,
@@ -88,6 +102,11 @@ class MdiController {
       currentWidth: windowWidth,
       child: child,
     );
+    if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged && dialogParent == null) {
+      resizableWindow.currentWidth = windowWidth / mdiWidth;
+      resizableWindow.currentHeight = windowHeight / mdiHeight;
+      resizableWindow.isPercentBased = true;
+    }
     resizableWindow.isDialog = isDailog;
     resizableWindow.onClose = onClose;
     resizableWindow.onClosed = onClosed;
@@ -101,7 +120,7 @@ class MdiController {
     // resizableWindow.x = rng.nextDouble() * 500;
     // resizableWindow.y = rng.nextDouble() * 500;
 
-    if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+    if (resizableWindow.isPercentBased) {
       // resizableWindow.x = ((parentWidth - (resizableWindow.currentWidth ?? 0)) / 2) / parentWidth;
       // resizableWindow.y = ((parentHeight - (resizableWindow.currentHeight ?? 0)) / 4) / parentHeight;
       resizableWindow.x = 0.5;
@@ -119,8 +138,9 @@ class MdiController {
 
     //Init onWindowDragged
     resizableWindow.onWindowDragged = (dx, dy, isResized) {
+      findParentWidth();
       // if (resizableWindow.isDialog && !isResized) return;
-      if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+      if (resizableWindow.isPercentBased) {
         if (parentWidth != null) {
           resizableWindow.x = resizableWindow.x! + ((dx * 1) / parentWidth);
           resizableWindow.y = resizableWindow.y! + ((dy * 1) / parentHeight);
@@ -158,11 +178,11 @@ class MdiController {
               resizableWindow.x = (mdiWidth - 50);
             }
           } else {
-            if (resizableWindow.y! > (dialogParent.currentHeight! - 80)) {
-              resizableWindow.y = (dialogParent.currentHeight! - 80);
+            if (resizableWindow.y! > (parentHeight - 80)) {
+              resizableWindow.y = (parentHeight - 80);
             }
-            if (resizableWindow.x! > (dialogParent.currentWidth! - 50)) {
-              resizableWindow.x = (dialogParent.currentWidth! - 50);
+            if (resizableWindow.x! > (parentWidth - 50)) {
+              resizableWindow.x = (parentWidth - 50);
             }
           }
           dialogParent.globalSetState!();
@@ -207,6 +227,7 @@ class MdiController {
       if (resizableWindow.onClosed != null) {
         resizableWindow.onClosed!(returnvalue);
       }
+      refreshSideBySideWindows();
     };
 
     if (isDailog && dialogParent != null) {
@@ -225,6 +246,7 @@ class MdiController {
       // Update Widgets after adding the new App
       onUpdate();
     }
+    refreshSideBySideWindows();
   }
 
   closeCurrentWindow(BuildContext context, [dynamic returnvalue]) {

@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter MDI Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
       ),
       home: const MyHomePage(),
     );
@@ -166,7 +166,7 @@ class MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            mdiController.addWindow(title: "Form$formID", child: Container(), uniqueId: formID.toString());
+            mdiController.addWindow(title: "Form$formID", child: page(), uniqueId: formID.toString());
             formID++;
           },
         ),
@@ -175,5 +175,27 @@ class MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  Widget page() {
+    return Builder(builder: (context) {
+      return Container(
+        child: Center(
+          child: ElevatedButton(
+            child: Text("Dialog"),
+            onPressed: () {
+              mdiController.addWindow(
+                title: "Form$formID",
+                child: page(),
+                uniqueId: formID.toString(),
+                isDailog: true,
+                dialogParent: mdiController.thisWindow(context),
+              );
+              formID++;
+            },
+          ),
+        ),
+      );
+    });
   }
 }
