@@ -20,6 +20,10 @@ class MdiManagerState extends State<MdiManager> {
     mdiController = widget.mdiController;
   }
 
+  bool isDarkMode() {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -42,7 +46,7 @@ class MdiManagerState extends State<MdiManager> {
                 Visibility(
                   visible: widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty,
                   child: Container(
-                    color: Colors.black.withOpacity(0.5),
+                    color: isDarkMode() ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.5),
                     child: Stack(
                       fit: StackFit.expand,
                       children: widget.mdiController.windows.where((element) => element.isDialog).map((e) {
@@ -64,8 +68,8 @@ class MdiManagerState extends State<MdiManager> {
     return widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty
         ? Container()
         : Container(
-            decoration: const BoxDecoration(
-              color: Color.fromARGB(255, 15, 20, 15),
+            decoration: BoxDecoration(
+              color: isDarkMode() ? Color.fromARGB(120, 15, 20, 15) : Color.fromARGB(120, 179, 194, 199),
               borderRadius: BorderRadius.all(Radius.circular(2)),
               boxShadow: [
                 BoxShadow(
@@ -133,9 +137,7 @@ class MdiManagerState extends State<MdiManager> {
                                     key: ValueKey("form_task${item.formIndex}"),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
-                                      backgroundColor: item == widget.mdiController.windows.last
-                                          ? Colors.blue[500]
-                                          : const Color.fromARGB(255, 23, 66, 109),
+                                      backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[500] : const Color.fromARGB(255, 23, 66, 109),
                                       minimumSize: const Size(100, 32),
                                       alignment: Alignment.centerLeft,
                                     ),
@@ -168,9 +170,7 @@ class MdiManagerState extends State<MdiManager> {
                                       } else {}
 
                                       if (!isRestored) {
-                                        if (mdiController.windows.isNotEmpty &&
-                                            mdiController.windows.last == item &&
-                                            !isRestored) {
+                                        if (mdiController.windows.isNotEmpty && mdiController.windows.last == item && !isRestored) {
                                           item?.isWindowDraggin = false;
                                           item?.isAnimationEnded = false;
                                           item?.isMinimized = true;
@@ -234,11 +234,8 @@ class MdiManagerState extends State<MdiManager> {
     //   final RenderBox renderBox = ValueKey("form_task${e.formIndex}")..currentContext?.findRenderObject() as RenderBox;
     //   final Size size = renderBox.size;
     // }
-    double leftLocal =
-        e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
-    double topLocal = e.isMinimized
-        ? boxcons.maxHeight + 10
-        : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
+    double leftLocal = e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
+    double topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
     if (!MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);

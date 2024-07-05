@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -64,15 +65,17 @@ class _ResizableWindowState extends State<ResizableWindow> {
     };
   }
 
+  bool isDarkMode() {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         //Here goes the same radius, u can put into a var or function
-        borderRadius: widget.isMaximized && widget.isAnimationEnded
-            ? null
-            : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+        borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
         boxShadow: widget.isMaximized && widget.isAnimationEnded
             ? null
             : const [
@@ -86,24 +89,32 @@ class _ResizableWindowState extends State<ResizableWindow> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Positioned(
-          //   top: 0,
-          //   left: 0,
-          //   right: 0,
-          //   child: _getHeader(),
-          // ),
-          // Positioned(
-          //   right: 0,
-          //   left: 0,
-          //   top: _headerSize,
-          //   bottom: 0,
-          //   child: _getBody(),
-          // ),
-          Column(
-            children: [
-              _getHeader(),
-              Expanded(child: _getBody()),
-            ],
+          ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200.withOpacity(0.1),
+                ),
+                padding: const EdgeInsets.all(3.0),
+                child: Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    //Here goes the same radius, u can put into a var or function
+                    borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+                  ),
+                  child: Container(
+                    color: widget == mdiController.thisWindow(context) ? const Color.fromARGB(50, 12, 25, 39) : const Color.fromARGB(50, 12, 63, 105),
+                    child: Column(
+                      children: [
+                        _getHeader(),
+                        Expanded(child: _getBody()),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
           if (!widget.isMaximized && !widget.isMinimized && widget.isResizeable) ...[
             Positioned(
@@ -112,11 +123,11 @@ class _ResizableWindowState extends State<ResizableWindow> {
                 bottom: 0,
                 child: GestureDetector(
                   onHorizontalDragUpdate: _onHorizontalDragRight,
-                  child: MouseRegion(
+                  child: const MouseRegion(
                     cursor: SystemMouseCursors.resizeLeftRight,
                     opaque: true,
-                    child: Container(
-                      width: 4,
+                    child: SizedBox(
+                      width: 7,
                     ),
                   ),
                 )),
@@ -126,11 +137,11 @@ class _ResizableWindowState extends State<ResizableWindow> {
               bottom: 0,
               child: GestureDetector(
                 onVerticalDragUpdate: _onHorizontalDragBottom,
-                child: MouseRegion(
+                child: const MouseRegion(
                   cursor: SystemMouseCursors.resizeUpDown,
                   opaque: true,
-                  child: Container(
-                    height: 4,
+                  child: SizedBox(
+                    height: 7,
                   ),
                 ),
               ),
@@ -141,11 +152,11 @@ class _ResizableWindowState extends State<ResizableWindow> {
                 bottom: 0,
                 child: GestureDetector(
                   onHorizontalDragUpdate: _onHorizontalDragLeft,
-                  child: MouseRegion(
+                  child: const MouseRegion(
                     cursor: SystemMouseCursors.resizeLeftRight,
                     opaque: true,
-                    child: Container(
-                      width: 4,
+                    child: SizedBox(
+                      width: 7,
                     ),
                   ),
                 )),
@@ -155,11 +166,11 @@ class _ResizableWindowState extends State<ResizableWindow> {
               top: 0,
               child: GestureDetector(
                 onVerticalDragUpdate: _onHorizontalDragTop,
-                child: MouseRegion(
+                child: const MouseRegion(
                   cursor: SystemMouseCursors.resizeUpDown,
                   opaque: true,
-                  child: Container(
-                    height: 4,
+                  child: SizedBox(
+                    height: 7,
                   ),
                 ),
               ),
@@ -169,12 +180,12 @@ class _ResizableWindowState extends State<ResizableWindow> {
               right: 0,
               child: GestureDetector(
                 onPanUpdate: onHorizontalDragBottomRight,
-                child: MouseRegion(
+                child: const MouseRegion(
                   cursor: SystemMouseCursors.resizeDownRight,
                   opaque: true,
-                  child: Container(
-                    height: 4,
-                    width: 4,
+                  child: SizedBox(
+                    height: 7,
+                    width: 7,
                   ),
                 ),
               ),
@@ -189,9 +200,6 @@ class _ResizableWindowState extends State<ResizableWindow> {
     return Container(
       // width: widget.isMaximized ? null : widget.currentWidth,
       height: MdiConfig.headerSize,
-      color: widget == mdiController.thisWindow(context)
-          ? const Color.fromARGB(255, 12, 25, 39)
-          : const Color.fromARGB(255, 12, 63, 105),
       child: Row(
         children: [
           Expanded(
@@ -441,7 +449,11 @@ class _ResizableWindowState extends State<ResizableWindow> {
         setState(() {});
       },
       child: Container(
-        color: const Color.fromARGB(255, 39, 41, 43),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: isDarkMode() ? const Color.fromARGB(255, 39, 41, 43) : Color.fromARGB(255, 209, 217, 224),
+          borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
+        ),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -459,9 +471,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     left: widget.dialogChild!.isMaximized ? 5 : widget.dialogChild?.x,
                     top: widget.dialogChild!.isMaximized ? 3 : widget.dialogChild?.y,
                     height: widget.dialogChild!.isMaximized
-                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) -
-                            MdiConfig.headerSize -
-                            10
+                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) - MdiConfig.headerSize - 10
                         : widget.dialogChild?.currentHeight,
                     width: widget.dialogChild!.isMaximized
                         ? (widget.isMaximized ? mdiController.mdiWidth : widget.currentWidth!) - 10
@@ -481,8 +491,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         // if (widget.currentWidth! < widget.minWidth) {
         //   widget.currentWidth = widget.minWidth;
         // }
-        widget.currentWidth =
-            ((widget.currentWidth! * mdiController.mdiWidth) - (details.delta.dx * 1)) / mdiController.mdiWidth;
+        widget.currentWidth = ((widget.currentWidth! * mdiController.mdiWidth) - (details.delta.dx * 1)) / mdiController.mdiWidth;
         if (widget.currentWidth! < widget.minWidthP) {
           widget.currentWidth = widget.minWidthP;
         }
@@ -508,8 +517,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
   void _onHorizontalDragRight(DragUpdateDetails details) {
     setState(() {
       if (widget.isPercentBased) {
-        widget.currentWidth =
-            ((widget.currentWidth! * mdiController.mdiWidth) + (details.delta.dx * 1)) / mdiController.mdiWidth;
+        widget.currentWidth = ((widget.currentWidth! * mdiController.mdiWidth) + (details.delta.dx * 1)) / mdiController.mdiWidth;
         if (widget.currentWidth! < widget.minWidthP) {
           widget.currentWidth = widget.minWidthP;
         }
@@ -535,8 +543,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
       if (widget.isPercentBased) {
         // widget.currentHeight = widget.currentHeight! + (details.delta.dy * 2);
 
-        widget.currentHeight =
-            ((widget.currentHeight! * mdiController.mdiHeight) + (details.delta.dy * 1)) / mdiController.mdiHeight;
+        widget.currentHeight = ((widget.currentHeight! * mdiController.mdiHeight) + (details.delta.dy * 1)) / mdiController.mdiHeight;
         if (widget.currentHeight! < widget.minHeightP) {
           widget.currentHeight = widget.minHeightP;
         }
@@ -564,8 +571,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         // if (widget.currentHeight! < widget.minHeight) {
         //   widget.currentHeight = widget.minHeight;
         // }
-        widget.currentHeight =
-            ((widget.currentHeight! * mdiController.mdiHeight) - (details.delta.dy * 1)) / mdiController.mdiHeight;
+        widget.currentHeight = ((widget.currentHeight! * mdiController.mdiHeight) - (details.delta.dy * 1)) / mdiController.mdiHeight;
         if (widget.currentHeight! < widget.minHeightP) {
           widget.currentHeight = widget.minHeightP;
         }
