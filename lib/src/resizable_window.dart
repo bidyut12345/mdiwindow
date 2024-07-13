@@ -70,133 +70,136 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        //Here goes the same radius, u can put into a var or function
-        borderRadius: widget.isMaximized && widget.isAnimationEnded
-            ? null
-            : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
-        boxShadow: widget.isMaximized && widget.isAnimationEnded
-            ? null
-            : const [
-                BoxShadow(
-                  color: Color(0x54000000),
-                  spreadRadius: 3,
-                  blurRadius: 20,
-                ),
-              ],
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200.withOpacity(0.1),
-                ),
-                padding: const EdgeInsets.all(3.0),
-                child: Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    //Here goes the same radius, u can put into a var or function
-                    borderRadius: widget.isMaximized && widget.isAnimationEnded
-                        ? null
-                        : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+    return FocusTraversalGroup(
+      policy: OrderedTraversalPolicy(),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          //Here goes the same radius, u can put into a var or function
+          borderRadius: widget.isMaximized && widget.isAnimationEnded
+              ? null
+              : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
+          boxShadow: widget.isMaximized && widget.isAnimationEnded
+              ? null
+              : const [
+                  BoxShadow(
+                    color: Color(0x54000000),
+                    spreadRadius: 3,
+                    blurRadius: 20,
                   ),
+                ],
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200.withOpacity(0.1),
+                  ),
+                  padding: const EdgeInsets.all(3.0),
                   child: Container(
-                    color: widget == mdiController.thisWindow(context)
-                        ? const Color.fromARGB(50, 12, 25, 39)
-                        : const Color.fromARGB(50, 12, 63, 105),
-                    child: Column(
-                      children: [
-                        _getHeader(),
-                        Expanded(child: _getBody()),
-                      ],
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      //Here goes the same radius, u can put into a var or function
+                      borderRadius: widget.isMaximized && widget.isAnimationEnded
+                          ? null
+                          : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+                    ),
+                    child: Container(
+                      color: widget == mdiController.thisWindow(context)
+                          ? const Color.fromARGB(50, 12, 25, 39)
+                          : const Color.fromARGB(50, 12, 63, 105),
+                      child: Column(
+                        children: [
+                          _getHeader(),
+                          Expanded(child: _getBody()),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          if (!widget.isMaximized && !widget.isMinimized && widget.isResizeable) ...[
-            Positioned(
+            if (!widget.isMaximized && !widget.isMinimized && widget.isResizeable) ...[
+              Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onHorizontalDragUpdate: _onHorizontalDragRight,
+                    child: const MouseRegion(
+                      cursor: SystemMouseCursors.resizeLeftRight,
+                      opaque: true,
+                      child: SizedBox(
+                        width: 7,
+                      ),
+                    ),
+                  )),
+              Positioned(
                 right: 0,
-                top: 0,
+                left: 0,
                 bottom: 0,
                 child: GestureDetector(
-                  onHorizontalDragUpdate: _onHorizontalDragRight,
+                  onVerticalDragUpdate: _onHorizontalDragBottom,
                   child: const MouseRegion(
-                    cursor: SystemMouseCursors.resizeLeftRight,
+                    cursor: SystemMouseCursors.resizeUpDown,
                     opaque: true,
                     child: SizedBox(
-                      width: 7,
+                      height: 7,
                     ),
-                  ),
-                )),
-            Positioned(
-              right: 0,
-              left: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onVerticalDragUpdate: _onHorizontalDragBottom,
-                child: const MouseRegion(
-                  cursor: SystemMouseCursors.resizeUpDown,
-                  opaque: true,
-                  child: SizedBox(
-                    height: 7,
                   ),
                 ),
               ),
-            ),
-            Positioned(
+              Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onHorizontalDragUpdate: _onHorizontalDragLeft,
+                    child: const MouseRegion(
+                      cursor: SystemMouseCursors.resizeLeftRight,
+                      opaque: true,
+                      child: SizedBox(
+                        width: 7,
+                      ),
+                    ),
+                  )),
+              Positioned(
+                right: 0,
                 left: 0,
                 top: 0,
-                bottom: 0,
                 child: GestureDetector(
-                  onHorizontalDragUpdate: _onHorizontalDragLeft,
+                  onVerticalDragUpdate: _onHorizontalDragTop,
                   child: const MouseRegion(
-                    cursor: SystemMouseCursors.resizeLeftRight,
+                    cursor: SystemMouseCursors.resizeUpDown,
                     opaque: true,
                     child: SizedBox(
+                      height: 7,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: GestureDetector(
+                  onPanUpdate: onHorizontalDragBottomRight,
+                  child: const MouseRegion(
+                    cursor: SystemMouseCursors.resizeDownRight,
+                    opaque: true,
+                    child: SizedBox(
+                      height: 7,
                       width: 7,
                     ),
                   ),
-                )),
-            Positioned(
-              right: 0,
-              left: 0,
-              top: 0,
-              child: GestureDetector(
-                onVerticalDragUpdate: _onHorizontalDragTop,
-                child: const MouseRegion(
-                  cursor: SystemMouseCursors.resizeUpDown,
-                  opaque: true,
-                  child: SizedBox(
-                    height: 7,
-                  ),
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: GestureDetector(
-                onPanUpdate: onHorizontalDragBottomRight,
-                child: const MouseRegion(
-                  cursor: SystemMouseCursors.resizeDownRight,
-                  opaque: true,
-                  child: SizedBox(
-                    height: 7,
-                    width: 7,
-                  ),
-                ),
-              ),
-            ),
-          ]
-        ],
+            ]
+          ],
+        ),
       ),
     );
   }
@@ -372,6 +375,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.all(2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
                       ),
                       child: Icon(Icons.minimize),
                     ),
@@ -403,9 +407,10 @@ class _ResizableWindowState extends State<ResizableWindow> {
                       },
                       style: ElevatedButton.styleFrom(
                         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                        padding: EdgeInsets.all(2),
+                        padding: const EdgeInsets.all(2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
                       ),
-                      child: Icon(Icons.square_outlined),
+                      child: const Icon(Icons.square_outlined),
                     ),
                   ),
                 ),
@@ -436,6 +441,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color.fromARGB(255, 238, 0, 0),
                   padding: EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
                 ),
                 child: Icon(Icons.close),
               ),
