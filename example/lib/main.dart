@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter MDI Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
       ),
       home: const MyHomePage(),
     );

@@ -352,10 +352,10 @@ class _ResizableWindowState extends State<ResizableWindow> {
           widget.isDialog || !widget.isMinimizeable
               ? Container()
               : Padding(
-                  padding: const EdgeInsets.all(2.0),
+                  padding: const EdgeInsets.all(0.0),
                   child: SizedBox(
-                    width: 35,
-                    child: ElevatedButton(
+                    width: 40,
+                    child: MaterialButton(
                       onPressed: () {
                         // widget.onWindowClosed!();
                         widget.isWindowDraggin = false;
@@ -373,10 +373,8 @@ class _ResizableWindowState extends State<ResizableWindow> {
                         mdiController.refreshSideBySideWindows();
                         setState(() {});
                       },
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.all(2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                      ),
+                      padding: EdgeInsets.all(2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
                       child: Icon(Icons.minimize),
                     ),
                   ),
@@ -384,10 +382,10 @@ class _ResizableWindowState extends State<ResizableWindow> {
           !widget.isResizeable
               ? Container()
               : Padding(
-                  padding: const EdgeInsets.all(2.0),
+                  padding: const EdgeInsets.all(0.0),
                   child: SizedBox(
-                    width: 35,
-                    child: ElevatedButton(
+                    width: 40,
+                    child: MaterialButton(
                       onPressed: () {
                         widget.isWindowDraggin = false;
                         // widget.onWindowClosed!();
@@ -405,11 +403,9 @@ class _ResizableWindowState extends State<ResizableWindow> {
                           mdiController.onUpdate();
                         }
                       },
-                      style: ElevatedButton.styleFrom(
-                        // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                        padding: const EdgeInsets.all(2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                      ),
+                      // hoverElevation: 10,
+                      padding: const EdgeInsets.all(2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
                       child: const Icon(Icons.square_outlined),
                     ),
                   ),
@@ -431,19 +427,24 @@ class _ResizableWindowState extends State<ResizableWindow> {
           //   ),
           // ),
           Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: const EdgeInsets.all(0.0),
             child: SizedBox(
-              width: 35,
-              child: ElevatedButton(
+              width: 40,
+              child: MaterialButton(
                 onPressed: () {
                   widget.onWindowClosed!(widget.returnvalue);
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                  padding: EdgeInsets.all(2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                ),
+                // style: ElevatedButton.styleFrom(
+                //   // backgroundColor: Color.fromARGB(255, 238, 0, 0),
+                //   surfaceTintColor: Color.fromARGB(255, 238, 0, 0),
+                //   padding: EdgeInsets.all(2),
+                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                // ),
+                hoverElevation: 10,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                hoverColor: Color.fromARGB(255, 238, 0, 0),
                 child: Icon(Icons.close),
+                padding: EdgeInsets.all(2),
               ),
             ),
           ),
