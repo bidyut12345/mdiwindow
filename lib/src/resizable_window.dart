@@ -70,8 +70,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   @override
   Widget build(BuildContext context) {
-    return FocusTraversalGroup(
-      policy: OrderedTraversalPolicy(),
+    return FocusScope(
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
