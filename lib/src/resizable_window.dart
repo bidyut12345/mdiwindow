@@ -144,6 +144,20 @@ class _ResizableWindowState extends State<ResizableWindow> {
                 bottom: 0,
                 child: GestureDetector(
                   onVerticalDragUpdate: _onHorizontalDragBottom,
+                  onDoubleTap: () {
+                    if (widget.isPercentBased) {
+                      widget.currentHeight = 1;
+                      widget.y = 0;
+                    } else {
+                      widget.y = 0;
+                      widget.currentHeight = mdiController.mdiHeight;
+                    }
+                    if (widget.dialogParent != null) {
+                      widget.dialogParent?.globalSetState!();
+                    } else {
+                      mdiController.onUpdate();
+                    }
+                  },
                   child: const MouseRegion(
                     cursor: SystemMouseCursors.resizeUpDown,
                     opaque: true,
@@ -173,6 +187,20 @@ class _ResizableWindowState extends State<ResizableWindow> {
                 top: 0,
                 child: GestureDetector(
                   onVerticalDragUpdate: _onHorizontalDragTop,
+                  onDoubleTap: () {
+                    if (widget.isPercentBased) {
+                      widget.currentHeight = 1;
+                      widget.y = 0;
+                    } else {
+                      widget.y = 0;
+                      widget.currentHeight = mdiController.mdiHeight;
+                    }
+                    if (widget.dialogParent != null) {
+                      widget.dialogParent?.globalSetState!();
+                    } else {
+                      mdiController.onUpdate();
+                    }
+                  },
                   child: const MouseRegion(
                     cursor: SystemMouseCursors.resizeUpDown,
                     opaque: true,
