@@ -52,6 +52,40 @@ class ResizableWindow extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
   _ResizableWindowState createState() => _ResizableWindowState();
+
+  minimizeAction() {
+    // widget.onWindowClosed!();
+    isWindowDraggin = false;
+    if (!isMinimized) {
+      isAnimationEnded = false;
+    } else {
+      isAnimationEnded = true;
+    }
+    isMinimized = !isMinimized;
+    if (dialogParent != null) {
+      dialogParent?.globalSetState!();
+    } else {
+      mdiController.onUpdate();
+    }
+    mdiController.refreshSideBySideWindows();
+  }
+
+  focusAction() {
+    // widget.onWindowClosed!();
+    isWindowDraggin = false;
+    if (!isMinimized) {
+      isAnimationEnded = false;
+    } else {
+      isAnimationEnded = true;
+    }
+    isMinimized = !isMinimized;
+    if (dialogParent != null) {
+      dialogParent?.globalSetState!();
+    } else {
+      mdiController.onUpdate();
+    }
+    mdiController.refreshSideBySideWindows();
+  }
 }
 
 class _ResizableWindowState extends State<ResizableWindow> {
@@ -66,6 +100,47 @@ class _ResizableWindowState extends State<ResizableWindow> {
 
   bool isDarkMode() {
     return Theme.of(context).brightness == Brightness.dark;
+  }
+
+  var _tapPosition;
+
+  void _showCustomMenu() async {
+    if (_tapPosition == null) {
+      return;
+    }
+    final overlay = Overlay.of(context).context.findRenderObject();
+    if (overlay == null) {
+      return;
+    }
+
+    final delta = await showMenu(
+      context: context,
+      items: <PopupMenuEntry>[
+        PopupMenuItem(
+          value: 1,
+          child: ListTile(
+            leading: const Icon(Icons.close),
+            title: const Text("Close"),
+            onTap: () {
+              widget.onWindowClosed!(widget.returnvalue);
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      ],
+      position: RelativeRect.fromRect(
+        _tapPosition! & const Size(40, 40),
+        Offset.zero & overlay.semanticBounds.size,
+      ),
+    );
+
+    if (delta == null) {
+      return;
+    }
+  }
+
+  void _storePosition(TapDownDetails details) {
+    _tapPosition = details.globalPosition;
   }
 
   @override
@@ -237,6 +312,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
       height: MdiConfig.headerSize,
       child: Row(
         children: [
+          //title area
           Expanded(
             child: GestureDetector(
               onPanUpdate: (tapInfo) {
@@ -281,6 +357,8 @@ class _ResizableWindowState extends State<ResizableWindow> {
                   mdiController.onUpdate();
                 }
               },
+              onSecondaryTapDown: _storePosition,
+              onSecondaryTap: _showCustomMenu,
               child: Container(
                 color: Colors.red.withOpacity(0.0),
                 child: Padding(
@@ -384,20 +462,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     width: 40,
                     child: MaterialButton(
                       onPressed: () {
-                        // widget.onWindowClosed!();
-                        widget.isWindowDraggin = false;
-                        if (!widget.isMinimized) {
-                          widget.isAnimationEnded = false;
-                        } else {
-                          widget.isAnimationEnded = true;
-                        }
-                        widget.isMinimized = !widget.isMinimized;
-                        if (widget.dialogParent != null) {
-                          widget.dialogParent?.globalSetState!();
-                        } else {
-                          mdiController.onUpdate();
-                        }
-                        mdiController.refreshSideBySideWindows();
+                        widget.minimizeAction();
                         setState(() {});
                       },
                       padding: EdgeInsets.all(2),

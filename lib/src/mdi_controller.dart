@@ -41,6 +41,9 @@ class MdiController {
     if (uniqueId != null && uniqueId.isNotEmpty) {
       if (windows.where((element) => element.uniqueId == uniqueId).isNotEmpty) {
         windows.firstWhere((element) => element.uniqueId == uniqueId).onWindowDown!();
+        if (windows.firstWhere((element) => element.uniqueId == uniqueId).isMinimized) {
+          windows.firstWhere((element) => element.uniqueId == uniqueId).minimizeAction();
+        }
         windows.firstWhere((element) => element.uniqueId == uniqueId).globalSetState!();
         return;
       }

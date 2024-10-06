@@ -64,12 +64,53 @@ class MdiManagerState extends State<MdiManager> {
     );
   }
 
+  var _tapPosition;
+
+  void _showCustomMenu(ResizableWindow? item) async {
+    if (_tapPosition == null) {
+      return;
+    }
+    final overlay = Overlay.of(context).context.findRenderObject();
+    if (overlay == null) {
+      return;
+    }
+
+    final delta = await showMenu(
+      context: context,
+      items: <PopupMenuEntry>[
+        PopupMenuItem(
+          value: 1,
+          child: ListTile(
+            leading: const Icon(Icons.close),
+            title: const Text("Close"),
+            onTap: () {
+              item?.onWindowClosed!(item.returnvalue);
+              Navigator.pop(context);
+            },
+          ),
+        ),
+      ],
+      position: RelativeRect.fromRect(
+        _tapPosition! & const Size(40, 40),
+        Offset.zero & overlay.semanticBounds.size,
+      ),
+    );
+
+    if (delta == null) {
+      return;
+    }
+  }
+
+  void _storePosition(TapDownDetails details) {
+    _tapPosition = details.globalPosition;
+  }
+
   Widget bottomBar() {
     return widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty
         ? Container()
         : Container(
             decoration: BoxDecoration(
-              color: isDarkMode() ? Color.fromARGB(120, 15, 20, 15) : Color.fromARGB(120, 179, 194, 199),
+              color: isDarkMode() ? const Color.fromARGB(120, 15, 20, 15) : Color.fromARGB(120, 179, 194, 199),
               borderRadius: BorderRadius.all(Radius.circular(2)),
               boxShadow: [
                 BoxShadow(
@@ -81,40 +122,95 @@ class MdiManagerState extends State<MdiManager> {
             ),
             child: Row(
               children: [
-                IconButton.filled(
-                    onPressed: () {
-                      //   var sublist = widget.mdiController.windows
-                      //       .where((element) => !element.isMaximized && !element.isMinimized)
-                      //       .toList();
-                      //   var count = sublist.length;
-                      //   if (count > 1) {
-                      //     double widt = widget.mdiController.mdiWidth / count;
-                      //     // double lff = widget.mdiController.mdiWidth / count;
-                      //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
-                      //       widt = (1.0 / count);
-                      //     }
-                      //     var left = widt / widget.mdiController.mdiWidth / 2;
-                      //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
-                      //       left = widt / 2;
-                      //     }
-                      //     for (ResizableWindow item in sublist) {
-                      //       item.currentWidth = widt;
-                      //       item.currentHeight = widget.mdiController.mdiHeight;
-                      //       if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
-                      //         item.currentHeight = 1;
-                      //       }
-                      //       item.x = left;
-                      //       item.y = 0.0;
-                      //       left += widt;
-                      //       item.globalSetState!();
-                      //     }
-                      // }
-                      mdiController.refreshSideBySideWindows();
-                      mdiController.isSideBySide = !mdiController.isSideBySide;
-                      mdiController.onUpdate();
-                    },
-                    tooltip: "Side By Side",
-                    icon: const Icon(Icons.view_sidebar_sharp)),
+                PopupMenuButton<String>(
+                  // child: FlutterLogo(),
+                  itemBuilder: (BuildContext context) {
+                    return [
+                      PopupMenuItem(
+                        child: ListTile(
+                          title: Text("Show Windows Side by Side"),
+                          leading: mdiController.isSideBySide
+                              ? Icon(Icons.check)
+                              : Opacity(
+                                  opacity: 0,
+                                  child: Icon(Icons.email),
+                                ),
+                          onTap: () {
+                            //   var sublist = widget.mdiController.windows
+                            //       .where((element) => !element.isMaximized && !element.isMinimized)
+                            //       .toList();
+                            //   var count = sublist.length;
+                            //   if (count > 1) {
+                            //     double widt = widget.mdiController.mdiWidth / count;
+                            //     // double lff = widget.mdiController.mdiWidth / count;
+                            //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                            //       widt = (1.0 / count);
+                            //     }
+                            //     var left = widt / widget.mdiController.mdiWidth / 2;
+                            //     if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                            //       left = widt / 2;
+                            //     }
+                            //     for (ResizableWindow item in sublist) {
+                            //       item.currentWidth = widt;
+                            //       item.currentHeight = widget.mdiController.mdiHeight;
+                            //       if (MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
+                            //         item.currentHeight = 1;
+                            //       }
+                            //       item.x = left;
+                            //       item.y = 0.0;
+                            //       left += widt;
+                            //       item.globalSetState!();
+                            //     }
+                            // }
+                            mdiController.refreshSideBySideWindows();
+                            mdiController.isSideBySide = !mdiController.isSideBySide;
+                            mdiController.onUpdate();
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () {},
+                        child: const Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(right: 15),
+                              child: Icon(Icons.minimize_outlined),
+                            ),
+                            Text("Hide All"),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () {},
+                        child: const Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: Icon(Icons.width_normal),
+                            ),
+                            Text("Show All"),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem(
+                        onTap: () {},
+                        child: const Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(right: 10),
+                              child: Icon(Icons.close_rounded),
+                            ),
+                            Text("Close All"),
+                          ],
+                        ),
+                      ),
+                    ];
+                  },
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
@@ -131,73 +227,83 @@ class MdiManagerState extends State<MdiManager> {
 
                           return item == null
                               ? Container()
-                              : Padding(
-                                  padding: const EdgeInsets.all(1.0),
-                                  child: ElevatedButton(
-                                    key: ValueKey("form_task${item.formIndex}"),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
-                                      backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[500] : const Color.fromARGB(255, 23, 66, 109),
-                                      minimumSize: const Size(100, 32),
-                                      alignment: Alignment.centerLeft,
-                                    ),
-                                    onPressed: () {
-                                      // widget.onWindowClosed!();
-                                      // item?.isWindowDraggin = false;
-                                      // if (!item!.isMinimized) {
-                                      //   item!.isAnimationEnded = false;
-                                      // } else {
-                                      //   item!.isAnimationEnded = true;
-                                      // }
-                                      // item!.isMinimized = !item.isMinimized;
-                                      // if (item!.dialogParent != null) {
-                                      //   item.dialogParent?.globalSetState!();
-                                      // } else {
-                                      //   mdiController.onUpdate();
-                                      // }
-                                      // setState(() {});
+                              : GestureDetector(
+                                  onSecondaryTapDown: _storePosition,
+                                  onSecondaryTap: () {
+                                    _showCustomMenu(item);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(1.0),
+                                    child: ElevatedButton(
+                                      key: ValueKey("form_task${item.formIndex}"),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
+                                        backgroundColor: item == widget.mdiController.windows.last
+                                            ? Colors.blue[500]
+                                            : const Color.fromARGB(255, 23, 66, 109),
+                                        minimumSize: const Size(100, 32),
+                                        alignment: Alignment.centerLeft,
+                                      ),
+                                      onPressed: () {
+                                        // widget.onWindowClosed!();
+                                        // item?.isWindowDraggin = false;
+                                        // if (!item!.isMinimized) {
+                                        //   item!.isAnimationEnded = false;
+                                        // } else {
+                                        //   item!.isAnimationEnded = true;
+                                        // }
+                                        // item!.isMinimized = !item.isMinimized;
+                                        // if (item!.dialogParent != null) {
+                                        //   item.dialogParent?.globalSetState!();
+                                        // } else {
+                                        //   mdiController.onUpdate();
+                                        // }
+                                        // setState(() {});
 
-                                      var isRestored = false;
-                                      item?.isAnimationEnded = false;
-                                      if (item?.isMinimized ?? false) {
-                                        item?.onWindowDown!();
-                                        mdiController.onUpdate();
-                                        isRestored = true;
-                                        item?.isWindowDraggin = false;
+                                        var isRestored = false;
                                         item?.isAnimationEnded = false;
-                                        item?.isMinimized = false;
-                                        mdiController.onUpdate();
-                                      } else {}
-
-                                      if (!isRestored) {
-                                        if (mdiController.windows.isNotEmpty && mdiController.windows.last == item && !isRestored) {
+                                        if (item?.isMinimized ?? false) {
+                                          item?.onWindowDown!();
+                                          mdiController.onUpdate();
+                                          isRestored = true;
                                           item?.isWindowDraggin = false;
                                           item?.isAnimationEnded = false;
-                                          item?.isMinimized = true;
+                                          item?.isMinimized = false;
                                           mdiController.onUpdate();
-                                        } else {
-                                          item?.onWindowDown!();
-                                          item?.globalSetState!();
+                                        } else {}
+
+                                        if (!isRestored) {
+                                          if (mdiController.windows.isNotEmpty &&
+                                              mdiController.windows.last == item &&
+                                              !isRestored) {
+                                            item?.isWindowDraggin = false;
+                                            item?.isAnimationEnded = false;
+                                            item?.isMinimized = true;
+                                            mdiController.onUpdate();
+                                          } else {
+                                            item?.onWindowDown!();
+                                            item?.globalSetState!();
+                                          }
                                         }
-                                      }
-                                    },
-                                    child: Column(children: [
-                                      Text(
-                                        item.title,
-                                      ),
-                                      Container(
-                                        decoration: const BoxDecoration(
-                                          color: Colors.white,
+                                      },
+                                      child: Column(children: [
+                                        Text(
+                                          item.title,
                                         ),
-                                        height: 2,
-                                        child: item == widget.mdiController.windows.last
-                                            ? Text(
-                                                item.title,
-                                                style: const TextStyle(height: 1, color: Colors.transparent),
-                                              )
-                                            : null,
-                                      )
-                                    ]),
+                                        Container(
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                          ),
+                                          height: 2,
+                                          child: item == widget.mdiController.windows.last
+                                              ? Text(
+                                                  item.title,
+                                                  style: const TextStyle(height: 1, color: Colors.transparent),
+                                                )
+                                              : null,
+                                        )
+                                      ]),
+                                    ),
                                   ),
                                 );
                         },
@@ -234,8 +340,11 @@ class MdiManagerState extends State<MdiManager> {
     //   final RenderBox renderBox = ValueKey("form_task${e.formIndex}")..currentContext?.findRenderObject() as RenderBox;
     //   final Size size = renderBox.size;
     // }
-    double leftLocal = e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
-    double topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
+    double leftLocal =
+        e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
+    double topLocal = e.isMinimized
+        ? boxcons.maxHeight + 10
+        : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
     if (!MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);
