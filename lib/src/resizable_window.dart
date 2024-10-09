@@ -84,7 +84,7 @@ class ResizableWindow extends StatefulWidget {
     } else {
       mdiController.onUpdate();
     }
-    mdiController.refreshSideBySideWindows();
+    globalSetState!();
   }
 }
 

@@ -341,10 +341,9 @@ class MdiManagerState extends State<MdiManager> {
     //   final Size size = renderBox.size;
     // }
     double leftLocal =
-        e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal! / 2)));
-    double topLocal = e.isMinimized
-        ? boxcons.maxHeight + 10
-        : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal! / 2)));
+        e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal / 2)));
+    double topLocal =
+        e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal / 2)));
     if (!MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);

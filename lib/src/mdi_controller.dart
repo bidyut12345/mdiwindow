@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mdiwindow/mdiwindow.dart';
 
-import 'resizable_window.dart';
-
 class MdiController {
   MdiController(this.onUpdate);
 
@@ -144,7 +142,7 @@ class MdiController {
       findParentWidth();
       // if (resizableWindow.isDialog && !isResized) return;
       if (resizableWindow.isPercentBased) {
-        if (parentWidth != null) {
+        if (parentWidth > 0) {
           resizableWindow.x = resizableWindow.x! + ((dx * 1) / parentWidth);
           resizableWindow.y = resizableWindow.y! + ((dy * 1) / parentHeight);
         } else {
