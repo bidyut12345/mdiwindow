@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mdiwindow/mdiwindow.dart';
 import 'global.dart';
 // import 'mdi_controller.dart';
-import 'resizable_window.dart';
+// import 'resizable_window.dart';
 
 class MdiManager extends StatefulWidget {
   final MdiController mdiController;
@@ -64,7 +64,7 @@ class MdiManagerState extends State<MdiManager> {
     );
   }
 
-  var _tapPosition;
+  dynamic _tapPosition;
 
   void _showCustomMenu(ResizableWindow? item) async {
     if (_tapPosition == null) {
@@ -110,9 +110,9 @@ class MdiManagerState extends State<MdiManager> {
         ? Container()
         : Container(
             decoration: BoxDecoration(
-              color: isDarkMode() ? const Color.fromARGB(120, 15, 20, 15) : Color.fromARGB(120, 179, 194, 199),
-              borderRadius: BorderRadius.all(Radius.circular(2)),
-              boxShadow: [
+              color: isDarkMode() ? const Color.fromARGB(120, 15, 20, 15) : const Color.fromARGB(120, 179, 194, 199),
+              borderRadius: const BorderRadius.all(Radius.circular(2)),
+              boxShadow: const [
                 BoxShadow(
                   color: Color(0x54000000),
                   spreadRadius: 3,
@@ -128,10 +128,11 @@ class MdiManagerState extends State<MdiManager> {
                     return [
                       PopupMenuItem(
                         child: ListTile(
-                          title: Text("Show Windows Side by Side"),
+                          tileColor: mdiController.isSideBySide ? Colors.red : null,
+                          title: const Text("Show Windows Side by Side"),
                           leading: mdiController.isSideBySide
-                              ? Icon(Icons.check)
-                              : Opacity(
+                              ? const Icon(Icons.check)
+                              : const Opacity(
                                   opacity: 0,
                                   child: Icon(Icons.email),
                                 ),
@@ -170,7 +171,12 @@ class MdiManagerState extends State<MdiManager> {
                         ),
                       ),
                       PopupMenuItem(
-                        onTap: () {},
+                        onTap: () {
+                          for (var element in mdiController.windows) {
+                            element.isMinimized = true;
+                          }
+                          mdiController.onUpdate();
+                        },
                         child: const Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -183,7 +189,12 @@ class MdiManagerState extends State<MdiManager> {
                         ),
                       ),
                       PopupMenuItem(
-                        onTap: () {},
+                        onTap: () {
+                          for (var element in mdiController.windows) {
+                            element.isMinimized = false;
+                          }
+                          mdiController.onUpdate();
+                        },
                         child: const Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -196,7 +207,12 @@ class MdiManagerState extends State<MdiManager> {
                         ),
                       ),
                       PopupMenuItem(
-                        onTap: () {},
+                        onTap: () {
+                          while (mdiController.windows.isNotEmpty) {
+                            mdiController.windows.first.onWindowClosed!(mdiController.windows.first.returnvalue);
+                          }
+                          mdiController.onUpdate();
+                        },
                         child: const Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
