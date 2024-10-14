@@ -1,5 +1,8 @@
+import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'global.dart';
@@ -150,9 +153,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           //Here goes the same radius, u can put into a var or function
-          borderRadius: widget.isMaximized && widget.isAnimationEnded
-              ? null
-              : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
+          borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
           boxShadow: widget.isMaximized && widget.isAnimationEnded
               ? null
               : const [
@@ -178,14 +179,10 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       //Here goes the same radius, u can put into a var or function
-                      borderRadius: widget.isMaximized && widget.isAnimationEnded
-                          ? null
-                          : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+                      borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
                     ),
                     child: Container(
-                      color: widget == mdiController.thisWindow(context)
-                          ? const Color.fromARGB(50, 12, 25, 39)
-                          : const Color.fromARGB(50, 12, 63, 105),
+                      color: widget == mdiController.thisWindow(context) ? const Color.fromARGB(50, 12, 25, 39) : const Color.fromARGB(50, 12, 63, 105),
                       child: Column(
                         children: [
                           _getHeader(),
@@ -306,12 +303,79 @@ class _ResizableWindowState extends State<ResizableWindow> {
     );
   }
 
+  minimizeClick() {
+    widget.minimizeAction();
+    setState(() {});
+  }
+
+  maximizeClick() {
+    widget.isWindowDraggin = false;
+    // widget.onWindowClosed!();
+    if (!widget.isMaximized) {
+      widget.isAnimationEnded = false;
+    } else {
+      widget.isAnimationEnded = true;
+    }
+    widget.isMaximized = !widget.isMaximized;
+    mdiController.refreshSideBySideWindows();
+    setState(() {});
+    if (widget.dialogParent != null) {
+      widget.dialogParent?.globalSetState!();
+    } else {
+      mdiController.onUpdate();
+    }
+  }
+
   _getHeader() {
     return Container(
       // width: widget.isMaximized ? null : widget.currentWidth,
       height: MdiConfig.headerSize,
       child: Row(
         children: [
+          if (!kIsWeb && Platform.isMacOS) ...[
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 15,
+              height: 15,
+              child: MaterialButton(
+                color: Colors.red,
+                onPressed: () {
+                  widget.onWindowClosed!(widget.returnvalue);
+                },
+                padding: const EdgeInsets.all(0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                child: const Icon(Icons.close, size: 12),
+              ),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 15,
+              height: 15,
+              child: MaterialButton(
+                color: Colors.yellow,
+                onPressed: () {
+                  minimizeClick();
+                },
+                padding: const EdgeInsets.all(0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                child: const Icon(CupertinoIcons.minus, size: 12),
+              ),
+            ),
+            const SizedBox(width: 10),
+            SizedBox(
+              width: 15,
+              height: 15,
+              child: MaterialButton(
+                color: Colors.green,
+                onPressed: () {
+                  maximizeClick();
+                },
+                padding: const EdgeInsets.all(0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                child: const Icon(CupertinoIcons.fullscreen, size: 12),
+              ),
+            ),
+          ],
           //title area
           Expanded(
             child: GestureDetector(
@@ -361,6 +425,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
               onSecondaryTap: _showCustomMenu,
               child: Container(
                 color: Colors.red.withOpacity(0.0),
+                alignment: !kIsWeb && Platform.isMacOS ? Alignment.center : Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 10.0),
                   child: Text(
@@ -374,6 +439,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
               ),
             ),
           ),
+          if (!kIsWeb && Platform.isMacOS) const SizedBox(width: 80),
           // Padding(
           //   padding: const EdgeInsets.all(2.0),
           //   child: SizedBox(
@@ -454,92 +520,79 @@ class _ResizableWindowState extends State<ResizableWindow> {
           //     ),
           //   ),
           // ),
-          widget.isDialog || !widget.isMinimizeable
-              ? Container()
-              : Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: SizedBox(
-                    width: 40,
-                    child: MaterialButton(
-                      onPressed: () {
-                        widget.minimizeAction();
-                        setState(() {});
-                      },
-                      padding: EdgeInsets.all(2),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                      child: Icon(Icons.minimize),
+          if (!(!kIsWeb && Platform.isMacOS)) ...[
+            widget.isDialog || !widget.isMinimizeable
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: SizedBox(
+                      width: 40,
+                      child: MaterialButton(
+                        onPressed: () {
+                          minimizeClick();
+                        },
+                        padding: EdgeInsets.all(2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                        child: Icon(Icons.minimize),
+                      ),
                     ),
                   ),
-                ),
-          !widget.isResizeable
-              ? Container()
-              : Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: SizedBox(
-                    width: 40,
-                    child: MaterialButton(
-                      onPressed: () {
-                        widget.isWindowDraggin = false;
-                        // widget.onWindowClosed!();
-                        if (!widget.isMaximized) {
-                          widget.isAnimationEnded = false;
-                        } else {
-                          widget.isAnimationEnded = true;
-                        }
-                        widget.isMaximized = !widget.isMaximized;
-                        mdiController.refreshSideBySideWindows();
-                        setState(() {});
-                        if (widget.dialogParent != null) {
-                          widget.dialogParent?.globalSetState!();
-                        } else {
-                          mdiController.onUpdate();
-                        }
-                      },
-                      // hoverElevation: 10,
-                      padding: const EdgeInsets.all(2),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                      child: const Icon(Icons.square_outlined),
+            !widget.isResizeable
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.all(0.0),
+                    child: SizedBox(
+                      width: 40,
+                      child: MaterialButton(
+                        onPressed: () {
+                          maximizeClick();
+                        },
+                        // hoverElevation: 10,
+                        padding: const EdgeInsets.all(2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                        child: const Icon(Icons.square_outlined),
+                      ),
                     ),
                   ),
+            // Padding(
+            //   padding: const EdgeInsets.all(2.0),
+            //   child: SizedBox(
+            //     width: 35,
+            //     child: ElevatedButton(
+            //       onPressed: () {
+            //         // widget.onWindowClosed!();
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
+            //         padding: EdgeInsets.all(2),
+            //       ),
+            //       child: Icon(Icons.dock_outlined),
+            //     ),
+            //   ),
+            // ),
+            Padding(
+              padding: const EdgeInsets.all(0.0),
+              child: SizedBox(
+                width: 40,
+                child: MaterialButton(
+                  onPressed: () {
+                    widget.onWindowClosed!(widget.returnvalue);
+                  },
+                  // style: ElevatedButton.styleFrom(
+                  //   // backgroundColor: Color.fromARGB(255, 238, 0, 0),
+                  //   surfaceTintColor: Color.fromARGB(255, 238, 0, 0),
+                  //   padding: EdgeInsets.all(2),
+                  //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  // ),
+                  hoverElevation: 10,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  hoverColor: Color.fromARGB(255, 238, 0, 0),
+                  child: Icon(Icons.close),
+                  padding: EdgeInsets.all(2),
                 ),
-          // Padding(
-          //   padding: const EdgeInsets.all(2.0),
-          //   child: SizedBox(
-          //     width: 35,
-          //     child: ElevatedButton(
-          //       onPressed: () {
-          //         // widget.onWindowClosed!();
-          //       },
-          //       style: ElevatedButton.styleFrom(
-          //         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-          //         padding: EdgeInsets.all(2),
-          //       ),
-          //       child: Icon(Icons.dock_outlined),
-          //     ),
-          //   ),
-          // ),
-          Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: SizedBox(
-              width: 40,
-              child: MaterialButton(
-                onPressed: () {
-                  widget.onWindowClosed!(widget.returnvalue);
-                },
-                // style: ElevatedButton.styleFrom(
-                //   // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                //   surfaceTintColor: Color.fromARGB(255, 238, 0, 0),
-                //   padding: EdgeInsets.all(2),
-                //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                // ),
-                hoverElevation: 10,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                hoverColor: Color.fromARGB(255, 238, 0, 0),
-                child: Icon(Icons.close),
-                padding: EdgeInsets.all(2),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -556,9 +609,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: isDarkMode() ? const Color.fromARGB(255, 39, 41, 43) : Color.fromARGB(255, 209, 217, 224),
-          borderRadius: widget.isMaximized && widget.isAnimationEnded
-              ? null
-              : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
+          borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -577,9 +628,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     left: widget.dialogChild!.isMaximized ? 5 : widget.dialogChild?.x,
                     top: widget.dialogChild!.isMaximized ? 3 : widget.dialogChild?.y,
                     height: widget.dialogChild!.isMaximized
-                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) -
-                            MdiConfig.headerSize -
-                            10
+                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) - MdiConfig.headerSize - 10
                         : widget.dialogChild?.currentHeight,
                     width: widget.dialogChild!.isMaximized
                         ? (widget.isMaximized ? mdiController.mdiWidth : widget.currentWidth!) - 10
@@ -599,8 +648,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         // if (widget.currentWidth! < widget.minWidth) {
         //   widget.currentWidth = widget.minWidth;
         // }
-        widget.currentWidth =
-            ((widget.currentWidth! * mdiController.mdiWidth) - (details.delta.dx * 1)) / mdiController.mdiWidth;
+        widget.currentWidth = ((widget.currentWidth! * mdiController.mdiWidth) - (details.delta.dx * 1)) / mdiController.mdiWidth;
         if (widget.currentWidth! < widget.minWidthP) {
           widget.currentWidth = widget.minWidthP;
         }
@@ -626,8 +674,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
   void _onHorizontalDragRight(DragUpdateDetails details) {
     setState(() {
       if (widget.isPercentBased) {
-        widget.currentWidth =
-            ((widget.currentWidth! * mdiController.mdiWidth) + (details.delta.dx * 1)) / mdiController.mdiWidth;
+        widget.currentWidth = ((widget.currentWidth! * mdiController.mdiWidth) + (details.delta.dx * 1)) / mdiController.mdiWidth;
         if (widget.currentWidth! < widget.minWidthP) {
           widget.currentWidth = widget.minWidthP;
         }
@@ -653,8 +700,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
       if (widget.isPercentBased) {
         // widget.currentHeight = widget.currentHeight! + (details.delta.dy * 2);
 
-        widget.currentHeight =
-            ((widget.currentHeight! * mdiController.mdiHeight) + (details.delta.dy * 1)) / mdiController.mdiHeight;
+        widget.currentHeight = ((widget.currentHeight! * mdiController.mdiHeight) + (details.delta.dy * 1)) / mdiController.mdiHeight;
         if (widget.currentHeight! < widget.minHeightP) {
           widget.currentHeight = widget.minHeightP;
         }
@@ -682,8 +728,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
         // if (widget.currentHeight! < widget.minHeight) {
         //   widget.currentHeight = widget.minHeight;
         // }
-        widget.currentHeight =
-            ((widget.currentHeight! * mdiController.mdiHeight) - (details.delta.dy * 1)) / mdiController.mdiHeight;
+        widget.currentHeight = ((widget.currentHeight! * mdiController.mdiHeight) - (details.delta.dy * 1)) / mdiController.mdiHeight;
         if (widget.currentHeight! < widget.minHeightP) {
           widget.currentHeight = widget.minHeightP;
         }
