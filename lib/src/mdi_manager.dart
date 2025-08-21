@@ -259,6 +259,9 @@ class MdiManagerState extends State<MdiManager> {
                                             : const Color.fromARGB(255, 23, 66, 109),
                                         minimumSize: const Size(100, 32),
                                         alignment: Alignment.centerLeft,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(4.0),
+                                        ),
                                       ),
                                       onPressed: () {
                                         // widget.onWindowClosed!();
