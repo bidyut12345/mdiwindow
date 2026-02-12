@@ -106,7 +106,8 @@ class MdiManagerState extends State<MdiManager> {
   }
 
   Widget bottomBar() {
-    return widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty
+    bool isAnyFullScreen = widget.mdiController.windows.any((element) => element.isFullScreen);
+    return widget.mdiController.windows.where((element) => element.isDialog).isNotEmpty || isAnyFullScreen
         ? Container()
         : Container(
             decoration: BoxDecoration(
@@ -254,9 +255,7 @@ class MdiManagerState extends State<MdiManager> {
                                       key: ValueKey("form_task${item.formIndex}"),
                                       style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
-                                        backgroundColor: item == widget.mdiController.windows.last
-                                            ? Colors.blue[500]
-                                            : const Color.fromARGB(255, 23, 66, 109),
+                                        backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[500] : const Color.fromARGB(255, 23, 66, 109),
                                         minimumSize: const Size(100, 32),
                                         alignment: Alignment.centerLeft,
                                         shape: RoundedRectangleBorder(
@@ -292,9 +291,7 @@ class MdiManagerState extends State<MdiManager> {
                                         } else {}
 
                                         if (!isRestored) {
-                                          if (mdiController.windows.isNotEmpty &&
-                                              mdiController.windows.last == item &&
-                                              !isRestored) {
+                                          if (mdiController.windows.isNotEmpty && mdiController.windows.last == item && !isRestored) {
                                             item?.isWindowDraggin = false;
                                             item?.isAnimationEnded = false;
                                             item?.isMinimized = true;
@@ -359,10 +356,8 @@ class MdiManagerState extends State<MdiManager> {
     //   final RenderBox renderBox = ValueKey("form_task${e.formIndex}")..currentContext?.findRenderObject() as RenderBox;
     //   final Size size = renderBox.size;
     // }
-    double leftLocal =
-        e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal / 2)));
-    double topLocal =
-        e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal / 2)));
+    double leftLocal = e.isMinimized ? minimizedLeft : (e.isMaximized ? 0 : ((e.x! * boxcons.maxWidth) - (widthLocal / 2)));
+    double topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : ((e.y! * boxcons.maxHeight) - (heightLocal / 2)));
     if (!MdiConfig.adjustWindowSizePositionOnParentSizeChanged) {
       leftLocal = e.isMinimized ? 20 : (e.isMaximized ? 0 : e.x!);
       topLocal = e.isMinimized ? boxcons.maxHeight + 10 : (e.isMaximized ? 0 : e.y!);

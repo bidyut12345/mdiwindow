@@ -7,6 +7,7 @@ class MdiController {
   final List<ResizableWindow> _windows = List.empty(growable: true);
 // updates/setstate of mdi container
   VoidCallback onUpdate;
+  Function(bool isFullScreen)? onFullScreen;
 
   List<ResizableWindow> get windows => _windows;
   List<ResizableWindow> sidebysidewindows = [];
