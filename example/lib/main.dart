@@ -166,7 +166,7 @@ class MyHomePageState extends State<MyHomePage> {
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            mdiController.addWindow(title: "Form$formID", child: page(), uniqueId: formID.toString());
+            mdiController.addWindow(title: "Form$formID", child: page(), uniqueId: formID.toString(), uniqueSettingName: "MDIDemo");
             formID++;
           },
         ),
@@ -188,6 +188,7 @@ class MyHomePageState extends State<MyHomePage> {
                 title: "Form$formID",
                 child: page(),
                 uniqueId: formID.toString(),
+                uniqueSettingName: "MDIDemo",
                 isDailog: true,
                 dialogParent: mdiController.thisWindow(context),
               );

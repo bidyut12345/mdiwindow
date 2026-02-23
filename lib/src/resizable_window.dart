@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'global.dart';
 import 'config.dart';
@@ -19,12 +20,14 @@ class ResizableWindow extends StatefulWidget {
     this.currentHeight = 600,
     this.currentWidth = 1200,
     required this.uniqueId,
+    required this.uniqueSettingName,
   });
 
   final String title;
   final int formIndex;
   final Widget child;
   final String? uniqueId;
+  final String uniqueSettingName;
 
   double? currentHeight;
   double? currentWidth;
@@ -99,11 +102,16 @@ class ResizableWindow extends StatefulWidget {
       mdiController.onFullScreen!(isFullScreen);
     }
     mdiController.onUpdate();
+
     globalSetState!();
   }
 }
 
 class _ResizableWindowState extends State<ResizableWindow> {
+  double _zoom = 1.0;
+  bool _showFullScreenExitButton = false;
+  bool _showFullScreenExitButtonOnExitButton = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -111,6 +119,39 @@ class _ResizableWindowState extends State<ResizableWindow> {
     widget.globalSetState = () {
       if (mounted) setState(() {});
     };
+    _loadZoom();
+  }
+
+  Future<void> _loadZoom() async {
+    if (widget.uniqueId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${widget.uniqueSettingName}_${widget.uniqueId}_zoom';
+    if (mounted) {
+      setState(() {
+        _zoom = prefs.getDouble(key) ?? 1.0;
+      });
+    }
+  }
+
+  Future<void> _saveZoom() async {
+    if (widget.uniqueId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${widget.uniqueSettingName}_${widget.uniqueId}_zoom';
+    await prefs.setDouble(key, _zoom);
+  }
+
+  void _zoomIn() {
+    setState(() {
+      _zoom = (_zoom + 0.1).clamp(0.5, 3.0);
+      _saveZoom();
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _zoom = (_zoom - 0.1).clamp(0.5, 3.0);
+      _saveZoom();
+    });
   }
 
   bool isDarkMode() {
@@ -198,7 +239,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200.withOpacity(0.1),
                     ),
-                    padding: const EdgeInsets.all(3.0),
+                    padding: widget.isFullScreen ? EdgeInsets.zero : const EdgeInsets.all(3.0),
                     child: Container(
                       clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
@@ -345,7 +386,18 @@ class _ResizableWindowState extends State<ResizableWindow> {
         ),
       );
     }
+    _showFullScreenExitButton = true;
+    _showFullScreenExitButtonOnExitButton = true;
     setState(() {});
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() {
+          _showFullScreenExitButton = false;
+          _showFullScreenExitButtonOnExitButton = false;
+        });
+      }
+    });
   }
 
   maximizeClick() {
@@ -561,6 +613,56 @@ class _ResizableWindowState extends State<ResizableWindow> {
           //     ),
           //   ),
           // ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: SizedBox(
+              width: 40,
+              child: Tooltip(
+                message: "Full Screen (Ctrl+Shift+L)",
+                child: MaterialButton(
+                  onPressed: () {
+                    fullScreenClick();
+                  },
+                  padding: const EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  child: Icon(widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: SizedBox(
+              width: 40,
+              child: Tooltip(
+                message: "Zoom In",
+                child: MaterialButton(
+                  onPressed: _zoomIn,
+                  padding: const EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  child: const Icon(Icons.add),
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(0.0),
+            child: SizedBox(
+              width: 40,
+              child: Tooltip(
+                message: "Zoom Out",
+                child: MaterialButton(
+                  onPressed: _zoomOut,
+                  padding: const EdgeInsets.all(2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                  child: const Icon(Icons.remove),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 30,
+          ),
           if (!(!kIsWeb && Platform.isMacOS)) ...[
             widget.isDialog || !widget.isMinimizeable
                 ? Container()
@@ -615,23 +717,6 @@ class _ResizableWindowState extends State<ResizableWindow> {
               padding: const EdgeInsets.all(0.0),
               child: SizedBox(
                 width: 40,
-                child: Tooltip(
-                  message: "Full Screen (Ctrl+Shift+L)",
-                  child: MaterialButton(
-                    onPressed: () {
-                      fullScreenClick();
-                    },
-                    padding: const EdgeInsets.all(2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                    child: Icon(widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: SizedBox(
-                width: 40,
                 child: MaterialButton(
                   onPressed: () {
                     widget.onWindowClosed!(widget.returnvalue);
@@ -669,33 +754,150 @@ class _ResizableWindowState extends State<ResizableWindow> {
           color: isDarkMode() ? const Color.fromARGB(255, 39, 41, 43) : Color.fromARGB(255, 209, 217, 224),
           borderRadius: widget.isMaximized && widget.isAnimationEnded ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
         ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            widget.child,
-            widget.dialogChild == null
-                ? Container()
-                : Container(
-                    color: Colors.black.withOpacity(0.5),
+        child: LayoutBuilder(builder: (context, constraints) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // Transform.scale(
+              //   scale: _zoom,
+              //   alignment: Alignment.topLeft,
+              //   child: SizedBox(
+              //     width: constraints.maxWidth / _zoom,
+              //     height: constraints.maxHeight / _zoom,
+              //     child: widget.child,
+              //   ),
+              // ),
+              FractionallySizedBox(
+                widthFactor: 1 / _zoom,
+                heightFactor: 1 / _zoom,
+                child: Transform.scale(
+                  scale: _zoom,
+                  child: LayoutBuilder(
+                    builder: (layoutcontext, layoutconstraint) {
+                      return widget.child;
+                    },
                   ),
-            widget.dialogChild == null
-                ? Container()
-                : AnimatedPositioned(
-                    duration: Duration(milliseconds: widget.dialogChild!.isWindowDraggin ? 0 : 300),
-                    curve: Curves.easeOutCubic,
-                    left: widget.dialogChild!.isMaximized ? 5 : widget.dialogChild?.x,
-                    top: widget.dialogChild!.isMaximized ? 3 : widget.dialogChild?.y,
-                    height: widget.dialogChild!.isMaximized
-                        ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) - MdiConfig.headerSize - 10
-                        : widget.dialogChild?.currentHeight,
-                    width: widget.dialogChild!.isMaximized
-                        ? (widget.isMaximized ? mdiController.mdiWidth : widget.currentWidth!) - 10
-                        : widget.dialogChild?.currentWidth,
-                    child: widget.dialogChild!,
-                  ),
-          ],
-        ),
+                ),
+              ),
+              widget.dialogChild == null
+                  ? Container()
+                  : Container(
+                      color: Colors.black.withOpacity(0.5),
+                    ),
+              widget.dialogChild == null
+                  ? Container()
+                  : AnimatedPositioned(
+                      duration: Duration(milliseconds: widget.dialogChild!.isWindowDraggin ? 0 : 300),
+                      curve: Curves.easeOutCubic,
+                      left: widget.dialogChild!.isMaximized ? 5 : widget.dialogChild?.x,
+                      top: widget.dialogChild!.isMaximized ? 3 : widget.dialogChild?.y,
+                      height: widget.dialogChild!.isMaximized
+                          ? (widget.isMaximized ? mdiController.mdiHeight : widget.currentHeight!) - MdiConfig.headerSize - 10
+                          : widget.dialogChild?.currentHeight,
+                      width: widget.dialogChild!.isMaximized
+                          ? (widget.isMaximized ? mdiController.mdiWidth : widget.currentWidth!) - 10
+                          : widget.dialogChild?.currentWidth,
+                      child: widget.dialogChild!,
+                    ),
+              _getFullScreenExitButton(),
+            ],
+          );
+        }),
       ),
+    );
+  }
+
+  Widget _getFullScreenExitButton() {
+    if (!widget.isFullScreen) return Container();
+    return Stack(
+      children: [
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 3,
+          child: MouseRegion(
+            onEnter: (event) {
+              setState(() {
+                _showFullScreenExitButton = true;
+              });
+            },
+            onExit: (event) {
+              Future.delayed(const Duration(milliseconds: 1500), () {
+                if (mounted) {
+                  setState(() {
+                    _showFullScreenExitButton = false;
+                  });
+                }
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+        if (_showFullScreenExitButton || _showFullScreenExitButtonOnExitButton)
+          Positioned(
+            top: 5,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: MouseRegion(
+                onEnter: (event) {
+                  setState(() {
+                    _showFullScreenExitButtonOnExitButton = true;
+                  });
+                },
+                onExit: (event) {
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      setState(() {
+                        _showFullScreenExitButtonOnExitButton = false;
+                      });
+                    }
+                  });
+                },
+                child: Material(
+                  color: Colors.transparent,
+                  elevation: 5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withAlpha((0.9 * 255).toInt()),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          "Full Screen Mode",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        const SizedBox(width: 10),
+                        TextButton(
+                          onPressed: () {
+                            fullScreenClick();
+                            setState(() {
+                              _showFullScreenExitButton = false;
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.grey[900],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text("Exit"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -799,6 +1001,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
           widget.onWindowDragged!(0, details.delta.dy, true);
         }
       }
+
       widget.isWindowDraggin = true;
       if (widget.dialogParent != null) {
         widget.dialogParent?.globalSetState!();
@@ -809,8 +1012,36 @@ class _ResizableWindowState extends State<ResizableWindow> {
   }
 
   void onHorizontalDragBottomRight(DragUpdateDetails details) {
-    _onHorizontalDragRight(details);
-    _onHorizontalDragBottom(details);
+    setState(() {
+      if (widget.isPercentBased) {
+        widget.currentHeight = ((widget.currentHeight! * mdiController.mdiHeight) + (details.delta.dy * 1)) / mdiController.mdiHeight;
+        if (widget.currentHeight! < widget.minHeightP) {
+          widget.currentHeight = widget.minHeightP;
+        }
+
+        widget.currentWidth = ((widget.currentWidth! * mdiController.mdiWidth) + (details.delta.dx * 1)) / mdiController.mdiWidth;
+        if (widget.currentWidth! < widget.minWidthP) {
+          widget.currentWidth = widget.minWidthP;
+        }
+      } else {
+        widget.currentHeight = widget.currentHeight! + details.delta.dy;
+        if (widget.currentHeight! < widget.minHeight) {
+          widget.currentHeight = widget.minHeight;
+        }
+
+        widget.currentWidth = widget.currentWidth! + details.delta.dx;
+        if (widget.currentWidth! < widget.minWidth) {
+          widget.currentWidth = widget.minWidth;
+        }
+      }
+
+      widget.isWindowDraggin = true;
+      if (widget.dialogParent != null) {
+        widget.dialogParent?.globalSetState!();
+      } else {
+        mdiController.onUpdate();
+      }
+    });
   }
 
   void onHorizontalDragBottomLeft(DragUpdateDetails details) {

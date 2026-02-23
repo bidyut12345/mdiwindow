@@ -1,0 +1,29 @@
+﻿Analyzing mdiwindow...                                          
+
+   info - 'MaterialStateProperty' is deprecated and shouldn't be used. Use WidgetStateProperty instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - example\lib\main.dart:53:18 - deprecated_member_use
+   info - 'MaterialState' is deprecated and shouldn't be used. Use WidgetState instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - example\lib\main.dart:54:16 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - example\lib\main.dart:59:20 - prefer_const_constructors
+   info - 'MaterialStateProperty' is deprecated and shouldn't be used. Use WidgetStateProperty instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - example\lib\main.dart:62:26 - deprecated_member_use
+   info - 'MaterialState' is deprecated and shouldn't be used. Use WidgetState instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - example\lib\main.dart:63:16 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - example\lib\main.dart:68:20 - prefer_const_constructors
+   info - Unnecessary instance of 'Container' - example\lib\main.dart:182:14 - avoid_unnecessary_containers
+   info - Use 'const' with the constructor to improve performance - example\lib\main.dart:185:20 - prefer_const_constructors
+   info - The type parameter name 'bool' matches a visible type name - lib\src\mdi_controller.dart:33:14 - avoid_types_as_parameter_names
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\mdi_manager.dart:49:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\mdi_manager.dart:49:88 - deprecated_member_use
+   info - The type parameter name 'bool' matches a visible type name - lib\src\resizable_window.dart:53:12 - avoid_types_as_parameter_names
+   info - An uninitialized field should have an explicit type annotation - lib\src\resizable_window.dart:158:7 - prefer_typing_uninitialized_variables
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\resizable_window.dart:237:51 - deprecated_member_use
+   info - Use a 'SizedBox' to add whitespace to a layout - lib\src\resizable_window.dart:409:12 - sized_box_for_whitespace
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\resizable_window.dart:506:35 - deprecated_member_use
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:649:11 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:663:34 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:665:32 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:718:31 - prefer_const_constructors
+   info - The 'child' argument should be last in widget constructor invocations - lib\src\resizable_window.dart:719:19 - sort_child_properties_last
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:719:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:720:28 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance - lib\src\resizable_window.dart:740:73 - prefer_const_constructors
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\src\resizable_window.dart:758:41 - deprecated_member_use
+warning - Unused import: 'package:mdiwindow/mdiwindow.dart' - test\mdiwindow_test.dart:3:8 - unused_import
+

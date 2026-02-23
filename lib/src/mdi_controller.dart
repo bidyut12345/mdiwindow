@@ -25,6 +25,7 @@ class MdiController {
   void addWindow({
     required String title,
     required Widget child,
+    required String uniqueSettingName,
     String? uniqueId,
     bool isDailog = false,
     double windowHeight = 600,
@@ -37,15 +38,13 @@ class MdiController {
     ResizableWindow? dialogParent,
     dynamic returnvalue,
   }) {
-    if (uniqueId != null && uniqueId.isNotEmpty) {
-      if (windows.where((element) => element.uniqueId == uniqueId).isNotEmpty) {
-        windows.firstWhere((element) => element.uniqueId == uniqueId).onWindowDown!();
-        if (windows.firstWhere((element) => element.uniqueId == uniqueId).isMinimized) {
-          windows.firstWhere((element) => element.uniqueId == uniqueId).minimizeAction();
-        }
-        windows.firstWhere((element) => element.uniqueId == uniqueId).globalSetState!();
-        return;
+    if (windows.where((element) => element.uniqueId == uniqueId).isNotEmpty) {
+      windows.firstWhere((element) => element.uniqueId == uniqueId).onWindowDown!();
+      if (windows.firstWhere((element) => element.uniqueId == uniqueId).isMinimized) {
+        windows.firstWhere((element) => element.uniqueId == uniqueId).minimizeAction();
       }
+      windows.firstWhere((element) => element.uniqueId == uniqueId).globalSetState!();
+      return;
     }
 
     double parentWidth = mdiWidth;
@@ -100,6 +99,7 @@ class MdiController {
       title: title,
       formIndex: formIndex,
       uniqueId: uniqueId,
+      uniqueSettingName: uniqueSettingName,
       currentHeight: windowHeight,
       currentWidth: windowWidth,
       child: child,
