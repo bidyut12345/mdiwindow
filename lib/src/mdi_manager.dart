@@ -114,16 +114,21 @@ class MdiManagerState extends State<MdiManager> {
               color: isDarkMode() ? const Color.fromARGB(120, 15, 20, 15) : const Color.fromARGB(120, 179, 194, 199),
               borderRadius: const BorderRadius.all(Radius.circular(2)),
               boxShadow: const [
-                BoxShadow(
-                  color: Color(0x54000000),
-                  spreadRadius: 3,
-                  blurRadius: 20,
-                ),
+                // BoxShadow(
+                //   color: Color(0x54000000),
+                //   spreadRadius: 3,
+                //   blurRadius: 20,
+                // ),
               ],
             ),
             child: Row(
               children: [
                 PopupMenuButton<String>(
+                  style: IconButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size(20, 20),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   // child: FlutterLogo(),
                   itemBuilder: (BuildContext context) {
                     return [
@@ -255,7 +260,8 @@ class MdiManagerState extends State<MdiManager> {
                                       key: ValueKey("form_task${item.formIndex}"),
                                       style: ElevatedButton.styleFrom(
                                         padding: const EdgeInsets.only(top: 3, left: 10, bottom: 3, right: 10),
-                                        backgroundColor: item == widget.mdiController.windows.last ? Colors.blue[500] : const Color.fromARGB(255, 23, 66, 109),
+                                        backgroundColor:
+                                            item == widget.mdiController.windows.last ? Colors.orange.shade500 : const Color.fromARGB(255, 23, 66, 109),
                                         minimumSize: const Size(100, 32),
                                         alignment: Alignment.centerLeft,
                                         shape: RoundedRectangleBorder(

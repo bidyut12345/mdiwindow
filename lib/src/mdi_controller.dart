@@ -20,6 +20,17 @@ class MdiController {
     sidebysidewindows = windows.where((element) => !element.isMaximized && !element.isMinimized).toList();
   }
 
+  bool handleWindowControlsByMDIWindow = true;
+  getControls() {
+    return handleWindowControlsByMDIWindow
+        ? []
+        : _windows.isEmpty
+            ? []
+            : _windows.last.isMaximized && !_windows.last.isMinimized
+                ? _windows.last.getControls()
+                : [];
+  }
+
   // final bool adjustWindowSizePositionOnParentSizeChanged = false; //In progress : locationInPercent
   bool isSideBySide = false;
   void addWindow({

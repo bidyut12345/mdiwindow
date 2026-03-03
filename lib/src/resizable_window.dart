@@ -60,6 +60,29 @@ class ResizableWindow extends StatefulWidget {
   @override
   // ignore: library_private_types_in_public_api
   _ResizableWindowState createState() => _ResizableWindowState();
+  ValueNotifier<double> _zoom = ValueNotifier<double>(1.0);
+  bool _showFullScreenExitButton = false;
+  bool _showFullScreenExitButtonOnExitButton = false;
+  late void Function(void Function()) masterSetState;
+  late bool Function() masterMounted;
+  late BuildContext Function() masterContext;
+
+  Future<void> _loadZoom() async {
+    if (uniqueId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${uniqueSettingName}_${uniqueId}_zoom';
+
+    masterSetState(() {
+      _zoom.value = prefs.getDouble(key) ?? 1.0;
+    });
+  }
+
+  Future<void> _saveZoom() async {
+    if (uniqueId == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${uniqueSettingName}_${uniqueId}_zoom';
+    await prefs.setDouble(key, _zoom.value);
+  }
 
   minimizeAction() {
     // widget.onWindowClosed!();
@@ -76,6 +99,48 @@ class ResizableWindow extends StatefulWidget {
       mdiController.onUpdate();
     }
     mdiController.refreshSideBySideWindows();
+  }
+
+  maximizeClick() {
+    isWindowDraggin = false;
+    // widget.onWindowClosed!();
+    if (!isMaximized) {
+      isAnimationEnded = false;
+    } else {
+      isAnimationEnded = true;
+    }
+    isMaximized = !isMaximized;
+    mdiController.refreshSideBySideWindows();
+    // setState(() {});
+    if (dialogParent != null) {
+      dialogParent?.globalSetState!();
+    } else {
+      mdiController.onUpdate();
+    }
+  }
+
+  fullScreenClick() {
+    fullScreenAction();
+    if (isFullScreen) {
+      ScaffoldMessenger.of(masterContext()).showSnackBar(
+        const SnackBar(
+          content: Text("Press Ctrl+Shift+L to exit Fullscreen"),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+    _showFullScreenExitButton = true;
+    _showFullScreenExitButtonOnExitButton = true;
+    masterSetState(() {});
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (masterMounted()) {
+        masterSetState(() {
+          _showFullScreenExitButton = false;
+          _showFullScreenExitButtonOnExitButton = false;
+        });
+      }
+    });
   }
 
   focusAction() {
@@ -105,13 +170,139 @@ class ResizableWindow extends StatefulWidget {
 
     globalSetState!();
   }
+
+  void _zoomIn() {
+    masterSetState(() {
+      _zoom.value = (_zoom.value + 0.1).clamp(0.2, 5.0);
+      _saveZoom();
+    });
+  }
+
+  void _zoomOut() {
+    masterSetState(() {
+      _zoom.value = (_zoom.value - 0.1).clamp(0.2, 5.0);
+      _saveZoom();
+    });
+  }
+
+  minimizeClick() {
+    minimizeAction();
+    masterSetState(() {});
+  }
+
+  getControls() {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: SizedBox(
+          width: 40,
+          child: Tooltip(
+            message: "Full Screen (Ctrl+Shift+L)",
+            child: MaterialButton(
+              onPressed: () {
+                fullScreenClick();
+              },
+              padding: const EdgeInsets.all(2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+              child: Icon(isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
+            ),
+          ),
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: SizedBox(
+          width: 40,
+          child: Tooltip(
+            message: "Zoom In",
+            child: MaterialButton(
+              onPressed: _zoomIn,
+              padding: const EdgeInsets.all(2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ),
+      ),
+      ValueListenableBuilder(
+          valueListenable: _zoom,
+          builder: (context, value, child) {
+            return Text("${(_zoom.value * 100).toStringAsFixed(0)}%");
+          }),
+      Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: SizedBox(
+          width: 40,
+          child: Tooltip(
+            message: "Zoom Out",
+            child: MaterialButton(
+              onPressed: _zoomOut,
+              padding: const EdgeInsets.all(2),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+              child: const Icon(Icons.remove),
+            ),
+          ),
+        ),
+      ),
+      SizedBox(
+        width: 30,
+      ),
+      if (!(!kIsWeb && Platform.isMacOS)) ...[
+        isDialog || !isMinimizeable
+            ? Container()
+            : Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: SizedBox(
+                  width: 40,
+                  child: MaterialButton(
+                    onPressed: () {
+                      minimizeClick();
+                    },
+                    padding: EdgeInsets.all(2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                    child: Icon(Icons.minimize),
+                  ),
+                ),
+              ),
+        !isResizeable
+            ? Container()
+            : Padding(
+                padding: const EdgeInsets.all(0.0),
+                child: SizedBox(
+                  width: 40,
+                  child: MaterialButton(
+                    onPressed: () {
+                      maximizeClick();
+                    },
+                    // hoverElevation: 10,
+                    padding: const EdgeInsets.all(2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+                    child: const Icon(Icons.square_outlined),
+                  ),
+                ),
+              ),
+        Padding(
+          padding: const EdgeInsets.all(0.0),
+          child: SizedBox(
+            width: 40,
+            child: MaterialButton(
+              onPressed: () {
+                onWindowClosed!(returnvalue);
+              },
+              hoverElevation: 10,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
+              hoverColor: Color.fromARGB(255, 238, 0, 0),
+              child: Icon(Icons.close),
+              padding: EdgeInsets.all(2),
+            ),
+          ),
+        ),
+      ],
+    ];
+  }
 }
 
 class _ResizableWindowState extends State<ResizableWindow> {
-  double _zoom = 1.0;
-  bool _showFullScreenExitButton = false;
-  bool _showFullScreenExitButtonOnExitButton = false;
-
   @override
   void initState() {
     // TODO: implement initState
@@ -119,39 +310,12 @@ class _ResizableWindowState extends State<ResizableWindow> {
     widget.globalSetState = () {
       if (mounted) setState(() {});
     };
-    _loadZoom();
-  }
-
-  Future<void> _loadZoom() async {
-    if (widget.uniqueId == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${widget.uniqueSettingName}_${widget.uniqueId}_zoom';
-    if (mounted) {
-      setState(() {
-        _zoom = prefs.getDouble(key) ?? 1.0;
-      });
-    }
-  }
-
-  Future<void> _saveZoom() async {
-    if (widget.uniqueId == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    final key = '${widget.uniqueSettingName}_${widget.uniqueId}_zoom';
-    await prefs.setDouble(key, _zoom);
-  }
-
-  void _zoomIn() {
-    setState(() {
-      _zoom = (_zoom + 0.1).clamp(0.5, 3.0);
-      _saveZoom();
-    });
-  }
-
-  void _zoomOut() {
-    setState(() {
-      _zoom = (_zoom - 0.1).clamp(0.5, 3.0);
-      _saveZoom();
-    });
+    widget.masterSetState = (fn) {
+      if (mounted) setState(fn);
+    };
+    widget.masterMounted = () => mounted;
+    widget.masterContext = () => context;
+    widget._loadZoom();
   }
 
   bool isDarkMode() {
@@ -206,7 +370,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
       onKeyEvent: (node, event) {
         if (event is KeyDownEvent) {
           if (event.logicalKey == LogicalKeyboardKey.keyL && HardwareKeyboard.instance.isControlPressed && HardwareKeyboard.instance.isShiftPressed) {
-            fullScreenClick();
+            widget.fullScreenClick();
             return KeyEventResult.handled;
           }
         }
@@ -371,55 +535,9 @@ class _ResizableWindowState extends State<ResizableWindow> {
     );
   }
 
-  minimizeClick() {
-    widget.minimizeAction();
-    setState(() {});
-  }
-
-  fullScreenClick() {
-    widget.fullScreenAction();
-    if (widget.isFullScreen) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Press Ctrl+Shift+L to exit Fullscreen"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-    _showFullScreenExitButton = true;
-    _showFullScreenExitButtonOnExitButton = true;
-    setState(() {});
-
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) {
-        setState(() {
-          _showFullScreenExitButton = false;
-          _showFullScreenExitButtonOnExitButton = false;
-        });
-      }
-    });
-  }
-
-  maximizeClick() {
-    widget.isWindowDraggin = false;
-    // widget.onWindowClosed!();
-    if (!widget.isMaximized) {
-      widget.isAnimationEnded = false;
-    } else {
-      widget.isAnimationEnded = true;
-    }
-    widget.isMaximized = !widget.isMaximized;
-    mdiController.refreshSideBySideWindows();
-    setState(() {});
-    if (widget.dialogParent != null) {
-      widget.dialogParent?.globalSetState!();
-    } else {
-      mdiController.onUpdate();
-    }
-  }
-
   _getHeader() {
     if (widget.isFullScreen) return Container();
+    if (widget.isMaximized && !kIsWeb && !Platform.isMacOS && !mdiController.handleWindowControlsByMDIWindow) return Container();
     return Container(
       // width: widget.isMaximized ? null : widget.currentWidth,
       height: MdiConfig.headerSize,
@@ -447,7 +565,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
               child: MaterialButton(
                 color: Colors.yellow,
                 onPressed: () {
-                  minimizeClick();
+                  widget.minimizeClick();
                 },
                 padding: const EdgeInsets.all(0),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -461,7 +579,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
               child: MaterialButton(
                 color: Colors.green,
                 onPressed: () {
-                  maximizeClick();
+                  widget.maximizeClick();
                 },
                 padding: const EdgeInsets.all(0),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -613,129 +731,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
           //     ),
           //   ),
           // ),
-          Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: SizedBox(
-              width: 40,
-              child: Tooltip(
-                message: "Full Screen (Ctrl+Shift+L)",
-                child: MaterialButton(
-                  onPressed: () {
-                    fullScreenClick();
-                  },
-                  padding: const EdgeInsets.all(2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  child: Icon(widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: SizedBox(
-              width: 40,
-              child: Tooltip(
-                message: "Zoom In",
-                child: MaterialButton(
-                  onPressed: _zoomIn,
-                  padding: const EdgeInsets.all(2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  child: const Icon(Icons.add),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: SizedBox(
-              width: 40,
-              child: Tooltip(
-                message: "Zoom Out",
-                child: MaterialButton(
-                  onPressed: _zoomOut,
-                  padding: const EdgeInsets.all(2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  child: const Icon(Icons.remove),
-                ),
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 30,
-          ),
-          if (!(!kIsWeb && Platform.isMacOS)) ...[
-            widget.isDialog || !widget.isMinimizeable
-                ? Container()
-                : Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: SizedBox(
-                      width: 40,
-                      child: MaterialButton(
-                        onPressed: () {
-                          minimizeClick();
-                        },
-                        padding: EdgeInsets.all(2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                        child: Icon(Icons.minimize),
-                      ),
-                    ),
-                  ),
-            !widget.isResizeable
-                ? Container()
-                : Padding(
-                    padding: const EdgeInsets.all(0.0),
-                    child: SizedBox(
-                      width: 40,
-                      child: MaterialButton(
-                        onPressed: () {
-                          maximizeClick();
-                        },
-                        // hoverElevation: 10,
-                        padding: const EdgeInsets.all(2),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                        child: const Icon(Icons.square_outlined),
-                      ),
-                    ),
-                  ),
-            // Padding(
-            //   padding: const EdgeInsets.all(2.0),
-            //   child: SizedBox(
-            //     width: 35,
-            //     child: ElevatedButton(
-            //       onPressed: () {
-            //         // widget.onWindowClosed!();
-            //       },
-            //       style: ElevatedButton.styleFrom(
-            //         // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-            //         padding: EdgeInsets.all(2),
-            //       ),
-            //       child: Icon(Icons.dock_outlined),
-            //     ),
-            //   ),
-            // ),
-            Padding(
-              padding: const EdgeInsets.all(0.0),
-              child: SizedBox(
-                width: 40,
-                child: MaterialButton(
-                  onPressed: () {
-                    widget.onWindowClosed!(widget.returnvalue);
-                  },
-                  // style: ElevatedButton.styleFrom(
-                  //   // backgroundColor: Color.fromARGB(255, 238, 0, 0),
-                  //   surfaceTintColor: Color.fromARGB(255, 238, 0, 0),
-                  //   padding: EdgeInsets.all(2),
-                  //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  // ),
-                  hoverElevation: 10,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1)),
-                  hoverColor: Color.fromARGB(255, 238, 0, 0),
-                  child: Icon(Icons.close),
-                  padding: EdgeInsets.all(2),
-                ),
-              ),
-            ),
-          ],
+          ...widget.getControls()
         ],
       ),
     );
@@ -768,10 +764,10 @@ class _ResizableWindowState extends State<ResizableWindow> {
               //   ),
               // ),
               FractionallySizedBox(
-                widthFactor: 1 / _zoom,
-                heightFactor: 1 / _zoom,
+                widthFactor: 1 / widget._zoom.value,
+                heightFactor: 1 / widget._zoom.value,
                 child: Transform.scale(
-                  scale: _zoom,
+                  scale: widget._zoom.value,
                   child: LayoutBuilder(
                     builder: (layoutcontext, layoutconstraint) {
                       return widget.child;
@@ -819,14 +815,14 @@ class _ResizableWindowState extends State<ResizableWindow> {
           child: MouseRegion(
             onEnter: (event) {
               setState(() {
-                _showFullScreenExitButton = true;
+                widget._showFullScreenExitButton = true;
               });
             },
             onExit: (event) {
               Future.delayed(const Duration(milliseconds: 1500), () {
                 if (mounted) {
                   setState(() {
-                    _showFullScreenExitButton = false;
+                    widget._showFullScreenExitButton = false;
                   });
                 }
               });
@@ -836,7 +832,7 @@ class _ResizableWindowState extends State<ResizableWindow> {
             ),
           ),
         ),
-        if (_showFullScreenExitButton || _showFullScreenExitButtonOnExitButton)
+        if (widget._showFullScreenExitButton || widget._showFullScreenExitButtonOnExitButton)
           Positioned(
             top: 5,
             left: 0,
@@ -845,14 +841,14 @@ class _ResizableWindowState extends State<ResizableWindow> {
               child: MouseRegion(
                 onEnter: (event) {
                   setState(() {
-                    _showFullScreenExitButtonOnExitButton = true;
+                    widget._showFullScreenExitButtonOnExitButton = true;
                   });
                 },
                 onExit: (event) {
                   Future.delayed(const Duration(milliseconds: 500), () {
                     if (mounted) {
                       setState(() {
-                        _showFullScreenExitButtonOnExitButton = false;
+                        widget._showFullScreenExitButtonOnExitButton = false;
                       });
                     }
                   });
@@ -876,9 +872,9 @@ class _ResizableWindowState extends State<ResizableWindow> {
                         const SizedBox(width: 10),
                         TextButton(
                           onPressed: () {
-                            fullScreenClick();
+                            widget.fullScreenClick();
                             setState(() {
-                              _showFullScreenExitButton = false;
+                              widget._showFullScreenExitButton = false;
                             });
                           },
                           style: TextButton.styleFrom(
