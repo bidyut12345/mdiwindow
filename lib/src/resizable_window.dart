@@ -121,14 +121,14 @@ class ResizableWindow extends StatefulWidget {
 
   fullScreenClick() {
     fullScreenAction();
-    if (isFullScreen) {
-      ScaffoldMessenger.of(masterContext()).showSnackBar(
-        const SnackBar(
-          content: Text("Press Ctrl+Shift+L to exit Fullscreen"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+    // if (isFullScreen) {
+    //   ScaffoldMessenger.of(masterContext()).showSnackBar(
+    //     const SnackBar(
+    //       content: Text("Press Ctrl+Shift+L to exit Fullscreen"),
+    //       duration: Duration(seconds: 2),
+    //     ),
+    //   );
+    // }
     _showFullScreenExitButton = true;
     _showFullScreenExitButtonOnExitButton = true;
     masterSetState(() {});
@@ -377,159 +377,172 @@ class _ResizableWindowState extends State<ResizableWindow> {
         return KeyEventResult.ignored;
       },
       child: FocusScope(
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            //Here goes the same radius, u can put into a var or function
-            borderRadius:
-                (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen ? null : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
-            boxShadow: (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen
-                ? null
-                : const [
-                    BoxShadow(
-                      color: Color(0x54000000),
-                      spreadRadius: 3,
-                      blurRadius: 20,
+        child: Stack(
+          children: [
+            Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                //Here goes the same radius, u can put into a var or function
+                borderRadius: (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen
+                    ? null
+                    : BorderRadius.all(Radius.circular(MdiConfig.borderRadius + 3)),
+                boxShadow: (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen
+                    ? null
+                    : const [
+                        BoxShadow(
+                          color: Color(0x54000000),
+                          spreadRadius: 3,
+                          blurRadius: 20,
+                        ),
+                      ],
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200.withOpacity(0.1),
+                        ),
+                        padding: widget.isFullScreen ? EdgeInsets.zero : const EdgeInsets.all(3.0),
+                        child: Container(
+                          clipBehavior: Clip.antiAlias,
+                          decoration: BoxDecoration(
+                            //Here goes the same radius, u can put into a var or function
+                            borderRadius: (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen
+                                ? null
+                                : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
+                          ),
+                          child: Container(
+                            color: widget == mdiController.thisWindow(context) ? const Color.fromARGB(50, 12, 25, 39) : const Color.fromARGB(50, 12, 63, 105),
+                            child: Column(
+                              children: [
+                                _getHeader(),
+                                Expanded(child: _getBody()),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (!widget.isMaximized && !widget.isMinimized && widget.isResizeable) ...[
+                    Positioned(
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onHorizontalDragUpdate: _onHorizontalDragRight,
+                          child: const MouseRegion(
+                            cursor: SystemMouseCursors.resizeLeftRight,
+                            opaque: true,
+                            child: SizedBox(
+                              width: 7,
+                            ),
+                          ),
+                        )),
+                    Positioned(
+                      right: 0,
+                      left: 0,
+                      bottom: 0,
+                      child: GestureDetector(
+                        onVerticalDragUpdate: _onHorizontalDragBottom,
+                        onDoubleTap: () {
+                          if (widget.isPercentBased) {
+                            widget.currentHeight = 1;
+                            widget.y = 0;
+                          } else {
+                            widget.y = 0;
+                            widget.currentHeight = mdiController.mdiHeight;
+                          }
+                          if (widget.dialogParent != null) {
+                            widget.dialogParent?.globalSetState!();
+                          } else {
+                            mdiController.onUpdate();
+                          }
+                        },
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.resizeUpDown,
+                          opaque: true,
+                          child: SizedBox(
+                            height: 7,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onHorizontalDragUpdate: _onHorizontalDragLeft,
+                          child: const MouseRegion(
+                            cursor: SystemMouseCursors.resizeLeftRight,
+                            opaque: true,
+                            child: SizedBox(
+                              width: 7,
+                            ),
+                          ),
+                        )),
+                    Positioned(
+                      right: 0,
+                      left: 0,
+                      top: 0,
+                      child: GestureDetector(
+                        onVerticalDragUpdate: _onHorizontalDragTop,
+                        onDoubleTap: () {
+                          if (widget.isPercentBased) {
+                            widget.currentHeight = 1;
+                            widget.y = 0;
+                          } else {
+                            widget.y = 0;
+                            widget.currentHeight = mdiController.mdiHeight;
+                          }
+                          if (widget.dialogParent != null) {
+                            widget.dialogParent?.globalSetState!();
+                          } else {
+                            mdiController.onUpdate();
+                          }
+                        },
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.resizeUpDown,
+                          opaque: true,
+                          child: SizedBox(
+                            height: 7,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onPanUpdate: onHorizontalDragBottomRight,
+                        child: const MouseRegion(
+                          cursor: SystemMouseCursors.resizeDownRight,
+                          opaque: true,
+                          child: SizedBox(
+                            height: 7,
+                            width: 7,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200.withOpacity(0.1),
-                    ),
-                    padding: widget.isFullScreen ? EdgeInsets.zero : const EdgeInsets.all(3.0),
-                    child: Container(
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        //Here goes the same radius, u can put into a var or function
-                        borderRadius: (widget.isMaximized && widget.isAnimationEnded) || widget.isFullScreen
-                            ? null
-                            : BorderRadius.all(Radius.circular(MdiConfig.borderRadius)),
-                      ),
-                      child: Container(
-                        color: widget == mdiController.thisWindow(context) ? const Color.fromARGB(50, 12, 25, 39) : const Color.fromARGB(50, 12, 63, 105),
-                        child: Column(
-                          children: [
-                            _getHeader(),
-                            Expanded(child: _getBody()),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                ],
               ),
-              if (!widget.isMaximized && !widget.isMinimized && widget.isResizeable) ...[
-                Positioned(
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: GestureDetector(
-                      onHorizontalDragUpdate: _onHorizontalDragRight,
-                      child: const MouseRegion(
-                        cursor: SystemMouseCursors.resizeLeftRight,
-                        opaque: true,
-                        child: SizedBox(
-                          width: 7,
-                        ),
-                      ),
-                    )),
-                Positioned(
-                  right: 0,
-                  left: 0,
-                  bottom: 0,
-                  child: GestureDetector(
-                    onVerticalDragUpdate: _onHorizontalDragBottom,
-                    onDoubleTap: () {
-                      if (widget.isPercentBased) {
-                        widget.currentHeight = 1;
-                        widget.y = 0;
-                      } else {
-                        widget.y = 0;
-                        widget.currentHeight = mdiController.mdiHeight;
-                      }
-                      if (widget.dialogParent != null) {
-                        widget.dialogParent?.globalSetState!();
-                      } else {
-                        mdiController.onUpdate();
-                      }
-                    },
-                    child: const MouseRegion(
-                      cursor: SystemMouseCursors.resizeUpDown,
-                      opaque: true,
-                      child: SizedBox(
-                        height: 7,
-                      ),
-                    ),
+            ),
+            if (widget.isMaximized || widget.isFullScreen)
+              Positioned(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold),
                   ),
-                ),
-                Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: GestureDetector(
-                      onHorizontalDragUpdate: _onHorizontalDragLeft,
-                      child: const MouseRegion(
-                        cursor: SystemMouseCursors.resizeLeftRight,
-                        opaque: true,
-                        child: SizedBox(
-                          width: 7,
-                        ),
-                      ),
-                    )),
-                Positioned(
-                  right: 0,
-                  left: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onVerticalDragUpdate: _onHorizontalDragTop,
-                    onDoubleTap: () {
-                      if (widget.isPercentBased) {
-                        widget.currentHeight = 1;
-                        widget.y = 0;
-                      } else {
-                        widget.y = 0;
-                        widget.currentHeight = mdiController.mdiHeight;
-                      }
-                      if (widget.dialogParent != null) {
-                        widget.dialogParent?.globalSetState!();
-                      } else {
-                        mdiController.onUpdate();
-                      }
-                    },
-                    child: const MouseRegion(
-                      cursor: SystemMouseCursors.resizeUpDown,
-                      opaque: true,
-                      child: SizedBox(
-                        height: 7,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onPanUpdate: onHorizontalDragBottomRight,
-                    child: const MouseRegion(
-                      cursor: SystemMouseCursors.resizeDownRight,
-                      opaque: true,
-                      child: SizedBox(
-                        height: 7,
-                        width: 7,
-                      ),
-                    ),
-                  ),
-                ),
-              ]
-            ],
-          ),
+                  top: -3,
+                  left: 5)
+          ],
         ),
       ),
     );
@@ -806,93 +819,120 @@ class _ResizableWindowState extends State<ResizableWindow> {
   Widget _getFullScreenExitButton() {
     if (!widget.isFullScreen) return Container();
     return Stack(
+      alignment: Alignment.topRight,
       children: [
+        // Positioned(
+        //   top: 0,
+        //   left: 0,
+        //   right: 0,
+        //   height: 3,
+        //   child: MouseRegion(
+        //     onEnter: (event) {
+        //       setState(() {
+        //         widget._showFullScreenExitButton = true;
+        //       });
+        //     },
+        //     onExit: (event) {
+        //       Future.delayed(const Duration(milliseconds: 1500), () {
+        //         if (mounted) {
+        //           setState(() {
+        //             widget._showFullScreenExitButton = false;
+        //           });
+        //         }
+        //       });
+        //     },
+        //     child: Container(
+        //       color: Colors.transparent,
+        //     ),
+        //   ),
+        // ),
+        // if (widget._showFullScreenExitButton || widget._showFullScreenExitButtonOnExitButton)
+        //   Positioned(
+        //     top: 5,
+        //     left: 0,
+        //     right: 0,
+        //     child: Center(
+        //       child: MouseRegion(
+        //         onEnter: (event) {
+        //           setState(() {
+        //             widget._showFullScreenExitButtonOnExitButton = true;
+        //           });
+        //         },
+        //         onExit: (event) {
+        //           Future.delayed(const Duration(milliseconds: 500), () {
+        //             if (mounted) {
+        //               setState(() {
+        //                 widget._showFullScreenExitButtonOnExitButton = false;
+        //               });
+        //             }
+        //           });
+        //         },
+        //         child: Material(
+        //           color: Colors.transparent,
+        //           elevation: 5,
+        //           child: Container(
+        //             decoration: BoxDecoration(
+        //               color: Colors.black.withAlpha((0.9 * 255).toInt()),
+        //               borderRadius: BorderRadius.circular(20),
+        //             ),
+        //             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        //             child: Row(
+        //               mainAxisSize: MainAxisSize.min,
+        //               children: [
+        //                 const Text(
+        //                   "Full Screen Mode",
+        //                   style: TextStyle(color: Colors.white),
+        //                 ),
+        //                 const SizedBox(width: 10),
+        //                 TextButton(
+        //                   onPressed: () {
+        //                     widget.fullScreenClick();
+        //                     setState(() {
+        //                       widget._showFullScreenExitButton = false;
+        //                     });
+        //                   },
+        //                   style: TextButton.styleFrom(
+        //                     backgroundColor: Colors.white,
+        //                     foregroundColor: Colors.grey[900],
+        //                     shape: RoundedRectangleBorder(
+        //                       borderRadius: BorderRadius.circular(20),
+        //                     ),
+        //                   ),
+        //                   child: const Text("Exit"),
+        //                 ),
+        //               ],
+        //             ),
+        //           ),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
         Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 3,
-          child: MouseRegion(
-            onEnter: (event) {
-              setState(() {
-                widget._showFullScreenExitButton = true;
-              });
-            },
-            onExit: (event) {
-              Future.delayed(const Duration(milliseconds: 1500), () {
-                if (mounted) {
-                  setState(() {
-                    widget._showFullScreenExitButton = false;
-                  });
-                }
-              });
-            },
-            child: Container(
-              color: Colors.transparent,
-            ),
-          ),
-        ),
-        if (widget._showFullScreenExitButton || widget._showFullScreenExitButtonOnExitButton)
-          Positioned(
-            top: 5,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: MouseRegion(
-                onEnter: (event) {
-                  setState(() {
-                    widget._showFullScreenExitButtonOnExitButton = true;
-                  });
-                },
-                onExit: (event) {
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) {
-                      setState(() {
-                        widget._showFullScreenExitButtonOnExitButton = false;
-                      });
-                    }
-                  });
-                },
-                child: Material(
-                  color: Colors.transparent,
-                  elevation: 5,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withAlpha((0.9 * 255).toInt()),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "Full Screen Mode",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        const SizedBox(width: 10),
-                        TextButton(
-                          onPressed: () {
-                            widget.fullScreenClick();
-                            setState(() {
-                              widget._showFullScreenExitButton = false;
-                            });
-                          },
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.grey[900],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: const Text("Exit"),
-                        ),
-                      ],
-                    ),
-                  ),
+          top: -3,
+          height: 14,
+          child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 206, 39, 31).withAlpha(150),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(horizontal: 3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
-            ),
-          ),
+              onPressed: () {
+                // setState(() {
+                //   widget._showFullScreenExitButton = true;
+                // });
+                widget.fullScreenClick();
+                setState(() {
+                  widget._showFullScreenExitButton = false;
+                });
+              },
+              child: Text(
+                "Exit Full Screen",
+                style: TextStyle(fontSize: 10),
+              )),
+        ),
       ],
     );
   }

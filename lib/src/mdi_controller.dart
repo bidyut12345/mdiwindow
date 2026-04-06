@@ -263,6 +263,7 @@ class MdiController {
   }
 
   closeCurrentWindow(BuildContext context, [dynamic returnvalue]) {
+    onFullScreen?.call(false);
     thisWindow(context)?.onWindowClosed!(returnvalue);
   }
 
