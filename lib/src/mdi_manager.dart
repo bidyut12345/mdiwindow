@@ -244,7 +244,9 @@ class MdiManagerState extends State<MdiManager> {
                         (index) {
                           ResizableWindow? item;
                           try {
-                            item = widget.mdiController.windows.firstWhere((element) => element.formIndex == index);
+                            if (widget.mdiController.windows.isNotEmpty) {
+                              item = widget.mdiController.windows.where((element) => element.formIndex == index).firstOrNull;
+                            }
                           } catch (_) {}
 
                           return item == null
