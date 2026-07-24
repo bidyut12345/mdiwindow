@@ -3,6 +3,7 @@
         "**/flutter/ephemeral": false,
         "**/Flutter/ephemeral": false,
         "**/.symlinks": false,
-        "**/.plugin_symlinks": false
+        "**/.plugin_symlinks": false,
+        "**/.ruby-lsp": false
     }
 }
