@@ -1,9 +1,9 @@
 {
     "files.exclude": {
-        "**/flutter/ephemeral": false,
-        "**/Flutter/ephemeral": false,
-        "**/.symlinks": false,
-        "**/.plugin_symlinks": false,
-        "**/.ruby-lsp": false
+        "**/flutter/ephemeral": true,
+        "**/Flutter/ephemeral": true,
+        "**/.symlinks": true,
+        "**/.plugin_symlinks": true,
+        "**/.ruby-lsp": true
     }
 }
